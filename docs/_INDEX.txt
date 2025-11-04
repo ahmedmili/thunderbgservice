@@ -1,0 +1,40 @@
+DOCUMENTATION FILES INDEX
+==========================
+
+All documentation files are located in: thunder-bg-service/docs/
+
+1. API_REFERENCE.md
+   Path: thunder-bg-service/docs/API_REFERENCE.md
+   Description: Complete API reference with all methods and signatures
+
+2. FEATURES.md
+   Path: thunder-bg-service/docs/FEATURES.md
+   Description: Overview of all features and capabilities
+
+3. ORGANIZATION.md
+   Path: thunder-bg-service/docs/ORGANIZATION.md
+   Description: Code structure and organization
+
+4. QUICK_START.md
+   Path: thunder-bg-service/docs/QUICK_START.md
+   Description: Quick start guide (5 minutes)
+
+5. USE_CASES.md
+   Path: thunder-bg-service/docs/USE_CASES.md
+   Description: Real-world use cases with complete code examples
+
+6. README.md
+   Path: thunder-bg-service/docs/README.md
+   Description: Documentation index and navigation guide
+
+MAIN README
+===========
+README.md
+Path: thunder-bg-service/README.md
+Description: Complete main documentation (950+ lines)
+
+EXAMPLES
+========
+All examples are in: thunder-bg-service/examples/
+See: thunder-bg-service/examples/INDEX.md for navigation
+

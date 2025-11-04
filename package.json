@@ -1,20 +1,50 @@
 {
-  "name": "@webify/capacitor-thunder-bg-service",
-  "version": "0.1.0",
-  "description": "Capacitor 7 plugin - Android foreground service with notification and location.",
+  "name": "@ahmed-mili/capacitor-thunder-bg-service",
+  "version": "0.1.1",
+  "description": "Capacitor 7 plugin - Android foreground service with notification, location tracking, and background tasks.",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
   "files": ["dist/", "android/", "ios/", "src/", "README.md"],
+  "keywords": [
+    "capacitor",
+    "plugin",
+    "android",
+    "foreground-service",
+    "notification",
+    "background-tasks",
+    "location",
+    "gps",
+    "tracking",
+    "ionic",
+    "capacitor-7"
+  ],
+  "author": "Webify",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/ahmedmili/thunderbgservice.git"
+  },
+  "bugs": {
+    "url": "https://github.com/ahmedmili/thunderbgservice/issues"
+  },
+  "homepage": "https://github.com/ahmedmili/thunderbgservice#readme",
   "scripts": {
     "build": "tsc -p tsconfig.json",
     "clean": "rimraf dist",
-    "prepare": "npm run build"
+    "prepare": "npm run build",
+    "prepublishOnly": "npm run build"
   },
   "capacitor": {
     "android": { "src": "android" },
     "ios": { "src": "ios" }
   },
-  "peerDependencies": {"@capacitor/core": "^7.0.0"},
-  "devDependencies": {"@capacitor/core": "^7.0.0", "typescript": "^5.6.3", "rimraf": "^5.0.5"}
+  "peerDependencies": {
+    "@capacitor/core": "^7.0.0"
+  },
+  "devDependencies": {
+    "@capacitor/core": "^7.0.0",
+    "typescript": "^5.6.3",
+    "rimraf": "^5.0.5"
+  }
 }
 

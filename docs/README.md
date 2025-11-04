@@ -1,124 +1,70 @@
-# @webify/capacitor-thunder-bg-service
+# Documentation
 
-Service Android au premier plan avec notification personnalisée et option localisation. iOS: stub.
+Bienvenue dans la documentation complète du plugin `@webify/capacitor-thunder-bg-service`.
 
-## Installation
-```bash
-npm i @webify/capacitor-thunder-bg-service
-npx cap sync
-```
+## 📚 Fichiers disponibles
 
-## API
-```ts
-import { ThunderBgService } from '@webify/capacitor-thunder-bg-service';
-await ThunderBgService.start({ notificationTitle: 'Online', notificationSubtitle: 'Waiting', enableLocation: true });
-await ThunderBgService.update({ notificationSubtitle: 'Working' });
-await ThunderBgService.stop();
-```
+### Guides principaux
 
-## Android
+1. **[QUICK_START.md](./QUICK_START.md)** - 🚀 Guide de démarrage rapide
+   - Installation en 2 minutes
+   - Code minimal fonctionnel
+   - Cas d'usage courants
+   - Checklist de configuration
 
-### Permissions
-- INTERNET, WAKE_LOCK, POST_NOTIFICATIONS, ACCESS_FINE/COARSE_LOCATION, FOREGROUND_SERVICE(+LOCATION)
+2. **[API_REFERENCE.md](./API_REFERENCE.md)** - 📘 Référence API complète
+   - Toutes les méthodes TypeScript/JavaScript
+   - Toutes les méthodes Java
+   - Signatures complètes
+   - Exemples de code
+   - Types et interfaces
 
-### Personnalisation de la notification (Layout par nom)
-Si vous préférez passer juste les noms de layout/IDs:
-```ts
-await ThunderBgService.start({
-  notificationTitle: 'Online',
-  notificationSubtitle: 'Waiting',
-  enableLocation: true,
-  customLayout: 'notification_driver',   // R.layout.notification_driver
-  titleViewId: 'txtTitle',               // R.id.txtTitle
-  subtitleViewId: 'txtSubtitle',         // R.id.txtSubtitle
-  timerViewId: 'txtTimer',                // R.id.txtTimer (optionnel)
-});
-```
+3. **[USE_CASES.md](./USE_CASES.md)** - 💡 Cas d'usage pratiques
+   - Application de livraison
+   - Application de fitness
+   - Application de transport (Uber-like)
+   - Monitoring système
+   - Synchronisation de données
+   - Code complet pour chaque cas
 
-### Utilisation depuis le code Java natif ⭐ NOUVEAU
+4. **[FEATURES.md](./FEATURES.md)** - ✨ Vue d'ensemble des fonctionnalités
+   - Liste complète des fonctionnalités
+   - Architecture
+   - Capacités techniques
+   - Checklist
 
-Vous pouvez utiliser le plugin directement depuis votre code Java natif sans passer par le bridge JS/TS:
+5. **[ORGANIZATION.md](./ORGANIZATION.md)** - 🏗️ Architecture et organisation
+   - Structure des dossiers
+   - Organisation du code
+   - Imports requis
+   - Avantages de l'organisation
 
-```java
-import com.webify.thunderbgservice.ThunderBgServiceHelper;
+## 🎯 Par où commencer ?
 
-// Démarrer le service
-ThunderBgServiceHelper.startService(
-    context,
-    "Online",
-    "Waiting for rides",
-    true  // enableLocation
-);
+### Nouveau utilisateur ?
+1. Commencez par **[QUICK_START.md](./QUICK_START.md)** - Démarrage en 5 minutes
+2. Puis consultez **[README.md](../README.md)** - Documentation principale complète
 
-// Mettre à jour la notification
-ThunderBgServiceHelper.updateNotification(
-    context,
-    "En course",
-    "Client XYZ → Destination",
-    "notification_riding",  // Changer le layout
-    "txtDriverStatus",
-    "txtDestination",
-    "txtElapsedTime"
-);
+### Besoin d'une référence rapide ?
+- **[API_REFERENCE.md](./API_REFERENCE.md)** - Toutes les méthodes détaillées
 
-// Arrêter le service
-ThunderBgServiceHelper.stopService(context);
-```
+### Cherchez des exemples ?
+- **[USE_CASES.md](./USE_CASES.md)** - 5 cas d'usage complets avec code
 
-**Voir les exemples complets**:
-- `EXAMPLE_NativeJavaUsage.java` - Exemples d'utilisation depuis Java natif
-- `EXAMPLE_ActivityUsage.java` - Utilisation dans une Activity
-- `EXAMPLE_NativeUsage_README.md` - Documentation complète
+### Voulez comprendre l'architecture ?
+- **[ORGANIZATION.md](./ORGANIZATION.md)** - Structure et organisation
+- **[FEATURES.md](./FEATURES.md)** - Vue d'ensemble des fonctionnalités
 
-### Tâches en arrière-plan ⭐ NOUVEAU
+## 📖 Documentation principale
 
-Vous pouvez enregistrer des fonctions Java qui s'exécutent périodiquement **même si l'app est fermée** :
+Pour la documentation complète, consultez le **[README.md principal](../README.md)** à la racine du package.
 
-**1. Créez une classe Java qui implémente `BackgroundTask`**:
-```java
-package com.yourpackage;
+## 🔗 Liens rapides
 
-import android.content.Context;
-import com.webify.thunderbgservice.BackgroundTask;
+- [README principal](../README.md)
+- [Exemples](../examples/)
+- [Index des exemples](../examples/INDEX.md)
 
-public class MyTask implements BackgroundTask {
-    @Override
-    public void execute(Context context, String taskId) {
-        // Votre code ici - s'exécute même si l'app est fermée !
-        Log.i("MyTask", "Tâche exécutée: " + taskId);
-    }
-}
-```
+---
 
-**2. Enregistrez-la depuis TypeScript/JS**:
-```ts
-await ThunderBgService.registerTask({
-  taskId: 'myTask',
-  taskClass: 'com.yourpackage.MyTask',  // Nom complet de la classe
-  intervalMs: 5000  // Toutes les 5 secondes (minimum 1000ms)
-});
-```
-
-**3. Ou depuis Java natif**:
-```java
-ThunderBgServiceHelper.registerTask(
-    context,
-    "myTask",
-    "com.yourpackage.MyTask",
-    5000
-);
-```
-
-**Voir les exemples**:
-- `EXAMPLE_BackgroundTask.java` - Exemples de tâches personnalisées
-- `EXAMPLE_BackgroundTask_usage.ts` - Utilisation depuis TypeScript
-
-## Test local
-```bash
-npm pack
-# dans l'app hôte
-npm i <chemin>/@webify/capacitor-thunder-bg-service-0.1.0.tgz
-npx cap sync
-```
-
-
+**Bonne lecture !** 📚
