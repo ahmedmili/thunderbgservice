@@ -1,0 +1,79 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  EXEMPLE DE LAYOUT PERSONNALISÉ - notification_online.xml
+  
+  Placez ce fichier dans: android/app/src/main/res/layout/notification_online.xml
+  
+  Ce layout sera utilisé lorsque l'état est "ONLINE"
+  
+  IDs requis (doivent correspondre à titleViewId, subtitleViewId, timerViewId passés au plugin):
+  - txtTitle (ou celui que vous passez dans titleViewId)
+  - txtSubtitle (ou celui que vous passez dans subtitleViewId)
+  - txtTimer (ou celui que vous passez dans timerViewId)
+-->
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:orientation="vertical"
+    android:padding="16dp"
+    android:background="#FFFFFF">
+
+    <!-- Ligne principale: Titre + Statut -->
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:gravity="center_vertical">
+
+        <!-- Icône de statut (optionnel) -->
+        <ImageView
+            android:id="@+id/imgStatus"
+            android:layout_width="24dp"
+            android:layout_height="24dp"
+            android:src="@drawable/ic_online"
+            android:layout_marginEnd="12dp" />
+
+        <!-- Titre -->
+        <TextView
+            android:id="@+id/txtTitle"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:text="Disponible"
+            android:textStyle="bold"
+            android:textSize="18sp"
+            android:textColor="#1B5E20" />
+
+        <!-- Timer (affiché en haut à droite) -->
+        <TextView
+            android:id="@+id/txtTimer"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="00:00:00"
+            android:textSize="14sp"
+            android:textColor="#4CAF50"
+            android:textStyle="bold" />
+    </LinearLayout>
+
+    <!-- Sous-titre -->
+    <TextView
+        android:id="@+id/txtSubtitle"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="4dp"
+        android:text="En attente de courses"
+        android:textSize="14sp"
+        android:textColor="#666666" />
+
+    <!-- Barre de progression optionnelle (pour montrer le temps écoulé visuellement) -->
+    <ProgressBar
+        android:id="@+id/progressBar"
+        android:layout_width="match_parent"
+        android:layout_height="4dp"
+        android:layout_marginTop="8dp"
+        android:max="100"
+        android:progress="0"
+        style="?android:attr/progressBarStyleHorizontal"
+        android:progressTint="#4CAF50" />
+
+</LinearLayout>

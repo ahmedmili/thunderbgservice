@@ -1,0 +1,44 @@
+1<?xml version="1.0" encoding="utf-8"?>
+2<manifest xmlns:android="http://schemas.android.com/apk/res/android"
+3    package="com.webify.thunderbgservice" >
+4
+5    <uses-sdk android:minSdkVersion="23" />
+6
+7    <uses-permission android:name="android.permission.INTERNET" />
+7-->C:\Users\Amiradou\Desktop\webify\plugin\thunder-bg-service\android\src\main\AndroidManifest.xml:2:3-64
+7-->C:\Users\Amiradou\Desktop\webify\plugin\thunder-bg-service\android\src\main\AndroidManifest.xml:2:20-62
+8    <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
+8-->C:\Users\Amiradou\Desktop\webify\plugin\thunder-bg-service\android\src\main\AndroidManifest.xml:3:3-76
+8-->C:\Users\Amiradou\Desktop\webify\plugin\thunder-bg-service\android\src\main\AndroidManifest.xml:3:20-74
+9    <uses-permission android:name="android.permission.WAKE_LOCK" />
+9-->C:\Users\Amiradou\Desktop\webify\plugin\thunder-bg-service\android\src\main\AndroidManifest.xml:4:3-65
+9-->C:\Users\Amiradou\Desktop\webify\plugin\thunder-bg-service\android\src\main\AndroidManifest.xml:4:20-63
+10    <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
+10-->C:\Users\Amiradou\Desktop\webify\plugin\thunder-bg-service\android\src\main\AndroidManifest.xml:5:3-74
+10-->C:\Users\Amiradou\Desktop\webify\plugin\thunder-bg-service\android\src\main\AndroidManifest.xml:5:20-72
+11    <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />
+11-->C:\Users\Amiradou\Desktop\webify\plugin\thunder-bg-service\android\src\main\AndroidManifest.xml:6:3-76
+11-->C:\Users\Amiradou\Desktop\webify\plugin\thunder-bg-service\android\src\main\AndroidManifest.xml:6:20-74
+12    <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION" />
+12-->C:\Users\Amiradou\Desktop\webify\plugin\thunder-bg-service\android\src\main\AndroidManifest.xml:7:3-78
+12-->C:\Users\Amiradou\Desktop\webify\plugin\thunder-bg-service\android\src\main\AndroidManifest.xml:7:20-76
+13    <uses-permission android:name="android.permission.FOREGROUND_SERVICE" />
+13-->C:\Users\Amiradou\Desktop\webify\plugin\thunder-bg-service\android\src\main\AndroidManifest.xml:8:3-74
+13-->C:\Users\Amiradou\Desktop\webify\plugin\thunder-bg-service\android\src\main\AndroidManifest.xml:8:20-72
+14    <uses-permission android:name="android.permission.FOREGROUND_SERVICE_LOCATION" />
+14-->C:\Users\Amiradou\Desktop\webify\plugin\thunder-bg-service\android\src\main\AndroidManifest.xml:9:3-83
+14-->C:\Users\Amiradou\Desktop\webify\plugin\thunder-bg-service\android\src\main\AndroidManifest.xml:9:20-81
+15
+16    <application>
+16-->C:\Users\Amiradou\Desktop\webify\plugin\thunder-bg-service\android\src\main\AndroidManifest.xml:10:3-15:17
+17        <service
+17-->C:\Users\Amiradou\Desktop\webify\plugin\thunder-bg-service\android\src\main\AndroidManifest.xml:11:5-14:59
+18            android:name="com.webify.thunderbgservice.ForegroundTaskService"
+18-->C:\Users\Amiradou\Desktop\webify\plugin\thunder-bg-service\android\src\main\AndroidManifest.xml:12:7-44
+19            android:exported="false"
+19-->C:\Users\Amiradou\Desktop\webify\plugin\thunder-bg-service\android\src\main\AndroidManifest.xml:13:7-31
+20            android:foregroundServiceType="location|dataSync" />
+20-->C:\Users\Amiradou\Desktop\webify\plugin\thunder-bg-service\android\src\main\AndroidManifest.xml:14:7-56
+21    </application>
+22
+23</manifest>

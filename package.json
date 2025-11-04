@@ -1,0 +1,20 @@
+{
+  "name": "@webify/capacitor-thunder-bg-service",
+  "version": "0.1.0",
+  "description": "Capacitor 7 plugin - Android foreground service with notification and location.",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "files": ["dist/", "android/", "ios/", "src/", "README.md"],
+  "scripts": {
+    "build": "tsc -p tsconfig.json",
+    "clean": "rimraf dist",
+    "prepare": "npm run build"
+  },
+  "capacitor": {
+    "android": { "src": "android" },
+    "ios": { "src": "ios" }
+  },
+  "peerDependencies": {"@capacitor/core": "^7.0.0"},
+  "devDependencies": {"@capacitor/core": "^7.0.0", "typescript": "^5.6.3", "rimraf": "^5.0.5"}
+}
+
