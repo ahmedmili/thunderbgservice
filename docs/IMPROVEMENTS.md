@@ -212,6 +212,122 @@ Le plugin inclut des transitions logiques par défaut :
 
 ---
 
+## ✅ Amélioration #3 : Support des Images Dynamiques
+
+**Version** : 0.1.3+  
+**Date** : 2024
+
+### 🎯 Problème Résolu
+
+Avant cette amélioration, les notifications ne pouvaient afficher que du texte. Les développeurs devaient créer des layouts statiques avec des images préchargées, sans possibilité de mettre à jour dynamiquement les images selon les données de l'application.
+
+### ✨ Solution Implémentée
+
+Un système complet de chargement d'images dynamiques qui supporte :
+- **Base64** : Images encodées en Base64 (`data:image/png;base64,...`)
+- **URLs HTTP/HTTPS** : Images depuis des serveurs web
+- **Ressources drawable** : Images depuis les ressources Android
+- **Cache intelligent** : Cache automatique des images chargées (max 50 images)
+- **Détection automatique** : Le plugin détecte automatiquement le type d'image
+
+### 📊 Bénéfices
+
+- **Notifications riches** : Avatars, photos, icônes dynamiques
+- **Expérience utilisateur améliorée** : Contenu visuel personnalisé
+- **Performance optimisée** : Cache automatique des images
+- **Chargement asynchrone** : Pas de blocage de l'UI
+
+### 🔧 Utilisation
+
+#### Exemple basique avec Base64
+
+```typescript
+await ThunderBgService.update({
+  viewData: {
+    txtDriverName: 'John Doe',
+    imgAvatar: 'data:image/png;base64,iVBORw0KGgo...', // Image Base64
+  },
+});
+```
+
+#### Exemple avec URL
+
+```typescript
+await ThunderBgService.update({
+  viewData: {
+    txtClientName: 'Jane Smith',
+    imgClientPhoto: 'https://api.example.com/users/123/avatar.jpg', // URL
+  },
+});
+```
+
+#### Mélange texte et images
+
+```typescript
+await ThunderBgService.update({
+  viewData: {
+    // Texte
+    txtDriverName: 'John Doe',
+    txtDestination: '123 Main St',
+    
+    // Images
+    imgAvatar: 'https://cdn.example.com/avatars/john.jpg',
+    imgMap: 'https://maps.example.com/route.png',
+  },
+});
+```
+
+### 📋 Format des Images
+
+#### Base64
+```typescript
+const base64Image = 'data:image/png;base64,iVBORw0KGgo...';
+// ou
+const base64Image = 'base64,iVBORw0KGgo...';
+```
+
+#### URL
+```typescript
+const urlImage = 'https://example.com/image.jpg';
+// ou
+const urlImage = 'http://example.com/image.png';
+```
+
+#### Ressource drawable
+```typescript
+const resourceImage = 'ic_notification'; // Nom de la ressource
+```
+
+### 🔍 Détection Automatique
+
+Le plugin détecte automatiquement le type d'image :
+- Si la valeur commence par `data:image` ou `base64,` → Base64
+- Si la valeur commence par `http://` ou `https://` → URL
+- Sinon → Traité comme texte (TextView)
+
+### 💾 Cache des Images
+
+- **Taille maximale** : 50 images
+- **Stratégie** : FIFO (First In, First Out)
+- **Thread-safe** : Utilise `ConcurrentHashMap`
+- **Nettoyage automatique** : Les anciennes images sont recyclées
+
+### 📝 Notes Techniques
+
+- Les images sont chargées de façon **asynchrone** dans un pool de threads
+- Le cache évite de recharger les mêmes images plusieurs fois
+- Les images Base64 sont décodées directement en mémoire
+- Les URLs sont téléchargées via `HttpURLConnection`
+- Compatible avec tous les formats d'image supportés par Android (PNG, JPG, WebP, etc.)
+
+### ⚠️ Limitations
+
+- Les images doivent être accessibles (URLs valides, Base64 valide)
+- Les images trop grandes peuvent consommer beaucoup de mémoire
+- Le cache est limité à 50 images (configurable dans le code)
+
+---
+
 ## 🔄 Améliorations Futures
 
 ### Phase 1 (En cours)
@@ -219,8 +335,8 @@ Le plugin inclut des transitions logiques par défaut :
 - ✅ Gestion d'état robuste
 - ⏳ Support iOS fonctionnel
 
-### Phase 2 (Planifié)
-- ⏳ Support des images dynamiques
+### Phase 2 (En cours)
+- ✅ Support des images dynamiques
 - ⏳ Géofencing intégré
 - ⏳ Métriques de performance
 

@@ -188,7 +188,7 @@ public class NotificationHelper {
 
     private void applyDynamicBindings(RemoteViews views, String viewDataJson, String buttonsJson) {
         String pkg = context.getPackageName();
-        // Text bindings
+        // Text bindings and image bindings
         if (viewDataJson != null && !viewDataJson.isEmpty()) {
             try {
                 org.json.JSONObject obj = new org.json.JSONObject(viewDataJson);
@@ -198,9 +198,19 @@ public class NotificationHelper {
                     // Utiliser ResourceCache pour améliorer les performances
                     int id = ResourceCache.getResourceId(context, viewIdName, "id", pkg);
                     if (id != 0) {
-                        String text = String.valueOf(obj.get(viewIdName));
-                        views.setTextViewText(id, text);
-                        Log.d("ThunderBG", "Set text viewData[" + viewIdName + "]=" + text + " (id=" + id + ")");
+                        Object value = obj.get(viewIdName);
+                        String valueStr = String.valueOf(value);
+                        
+                        // Détecter si c'est une image (Base64, URL, ou ressource)
+                        if (isImageSource(valueStr)) {
+                            // C'est une image
+                            ImageLoaderHelper.loadImage(context, views, id, valueStr);
+                            Log.d("ThunderBG", "Set image viewData[" + viewIdName + "]=" + valueStr + " (id=" + id + ")");
+                        } else {
+                            // C'est du texte
+                            views.setTextViewText(id, valueStr);
+                            Log.d("ThunderBG", "Set text viewData[" + viewIdName + "]=" + valueStr + " (id=" + id + ")");
+                        }
                     } else {
                         Log.w("ThunderBG", "View ID not found: " + viewIdName + " in package " + pkg);
                     }
@@ -277,6 +287,30 @@ public class NotificationHelper {
                 Log.e("ThunderBG", "Failed parsing buttonsJson: " + buttonsJson, e);
             }
         }
+    }
+    
+    /**
+     * Vérifie si une chaîne est une source d'image (Base64, URL, ou ressource)
+     */
+    private boolean isImageSource(String value) {
+        if (value == null || value.isEmpty()) {
+            return false;
+        }
+        
+        // Base64
+        if (value.startsWith("data:image") || value.startsWith("base64,")) {
+            return true;
+        }
+        
+        // URL
+        if (value.startsWith("http://") || value.startsWith("https://")) {
+            return true;
+        }
+        
+        // Ressource drawable (optionnel - on peut aussi le traiter comme texte)
+        // On ne le détecte pas automatiquement car cela pourrait être un nom de TextView
+        
+        return false;
     }
 }
 
