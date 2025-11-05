@@ -10,15 +10,18 @@ import com.getcapacitor.PluginCall;
 import com.getcapacitor.PluginMethod;
 import com.getcapacitor.annotation.CapacitorPlugin;
 import com.ahmedmili.thunderbgservice.tasks.TaskResultStorage;
+import com.ahmedmili.thunderbgservice.geofencing.GeofenceManager;
 
 @CapacitorPlugin(name = "ThunderBgService")
 public class ThunderBgServicePlugin extends Plugin {
     private static ThunderBgServicePlugin instance;
+    private GeofenceManager geofenceManager;
     
     @Override
     public void load() {
         super.load();
         instance = this;
+        geofenceManager = new GeofenceManager(getContext());
     }
     
     public static ThunderBgServicePlugin getInstance() {
@@ -174,6 +177,73 @@ public class ThunderBgServicePlugin extends Plugin {
         } catch (Exception e) {
             call.reject("Error getting task result: " + e.getMessage());
         }
+    }
+    
+    @PluginMethod
+    public void addGeofence(PluginCall call) {
+        try {
+            String id = call.getString("id", "");
+            double latitude = call.getDouble("latitude", 0.0);
+            double longitude = call.getDouble("longitude", 0.0);
+            double radius = call.getDouble("radius", 100.0);
+            String onEnter = call.getString("onEnter", null);
+            String onExit = call.getString("onExit", null);
+            
+            if (id.isEmpty()) {
+                call.reject("id is required");
+                return;
+            }
+            
+            GeofenceManager.GeofenceConfig config = new GeofenceManager.GeofenceConfig(
+                id, latitude, longitude, (float) radius
+            );
+            config.onEnterAction = onEnter;
+            config.onExitAction = onExit;
+            
+            // Extraire les extras
+            try {
+                JSObject extrasObj = call.getObject("extras", null);
+                if (extrasObj != null) {
+                    java.util.Iterator<String> keys = extrasObj.keys();
+                    while (keys.hasNext()) {
+                        String key = keys.next();
+                        config.extras.put(key, extrasObj.getString(key));
+                    }
+                }
+            } catch (Exception ignored) {}
+            
+            geofenceManager.addGeofence(config);
+            
+            JSObject ret = new JSObject();
+            ret.put("added", true);
+            call.resolve(ret);
+        } catch (Exception e) {
+            call.reject("Error adding geofence: " + e.getMessage());
+        }
+    }
+    
+    @PluginMethod
+    public void removeGeofence(PluginCall call) {
+        String geofenceId = call.getString("geofenceId", "");
+        if (geofenceId.isEmpty()) {
+            call.reject("geofenceId is required");
+            return;
+        }
+        
+        geofenceManager.removeGeofence(geofenceId);
+        
+        JSObject ret = new JSObject();
+        ret.put("removed", true);
+        call.resolve(ret);
+    }
+    
+    @PluginMethod
+    public void removeAllGeofences(PluginCall call) {
+        geofenceManager.removeAllGeofences();
+        
+        JSObject ret = new JSObject();
+        ret.put("removed", true);
+        call.resolve(ret);
     }
 }
 

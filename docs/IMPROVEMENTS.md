@@ -421,9 +421,135 @@ Voir `ios/INFO_PLIST.md` pour la configuration complète :
 - ✅ Gestion d'état robuste
 - ✅ Support iOS fonctionnel
 
+## ✅ Amélioration #5 : Géofencing Intégré
+
+**Version** : 0.1.3+  
+**Date** : 2024
+
+### 🎯 Problème Résolu
+
+Avant cette amélioration, les développeurs devaient implémenter manuellement le géofencing pour détecter quand un utilisateur entre ou sort d'une zone géographique. Cela nécessitait beaucoup de code complexe et de gestion manuelle.
+
+### ✨ Solution Implémentée
+
+Un système de géofencing intégré qui permet de :
+- **Créer des zones géographiques** : Zones circulaires avec latitude, longitude et rayon
+- **Callbacks automatiques** : Actions broadcast lors de l'entrée/sortie
+- **Données personnalisées** : Extras associés à chaque géofence
+- **Gestion multiple** : Support de plusieurs géofences simultanées
+- **Cross-platform** : Fonctionne sur Android et iOS
+
+### 📊 Fonctionnalités
+
+- ✅ **Ajout de géofences** : Zones circulaires avec rayon configurable
+- ✅ **Callbacks automatiques** : BroadcastReceiver (Android) / NotificationCenter (iOS)
+- ✅ **Données personnalisées** : Extras par géofence
+- ✅ **Gestion multiple** : Plusieurs zones simultanées
+- ✅ **Suppression** : Par ID ou toutes en une fois
+
+### 🔧 Utilisation
+
+#### Exemple basique
+
+```typescript
+import { ThunderBgService } from '@ahmed-mili/capacitor-thunder-bg-service';
+
+// Ajouter une géofence
+await ThunderBgService.addGeofence({
+  id: 'home_zone',
+  latitude: 48.8566,
+  longitude: 2.3522,
+  radius: 100, // mètres
+  onEnter: 'com.yourapp.ACTION_ENTER_HOME',
+  onExit: 'com.yourapp.ACTION_EXIT_HOME',
+});
+```
+
+#### Avec données personnalisées
+
+```typescript
+await ThunderBgService.addGeofence({
+  id: 'client_location',
+  latitude: 48.8566,
+  longitude: 2.3522,
+  radius: 50,
+  onEnter: 'com.yourapp.ACTION_ARRIVED_AT_CLIENT',
+  extras: {
+    clientId: '123',
+    clientName: 'John Doe',
+  },
+});
+```
+
+### 📋 Configuration Android
+
+Dans `AndroidManifest.xml`, déclarez votre BroadcastReceiver :
+
+```xml
+<receiver 
+    android:name=".GeofenceActionReceiver"
+    android:exported="true">
+    <intent-filter>
+        <action android:name="com.yourapp.ACTION_ENTER_HOME"/>
+        <action android:name="com.yourapp.ACTION_EXIT_HOME"/>
+    </intent-filter>
+</receiver>
+```
+
+Dans votre `GeofenceActionReceiver.java` :
+
+```java
+public class GeofenceActionReceiver extends BroadcastReceiver {
+    @Override
+    public void onReceive(Context context, Intent intent) {
+        String action = intent.getAction();
+        String geofenceId = intent.getStringExtra("geofenceId");
+        String eventType = intent.getStringExtra("eventType"); // "ENTER" ou "EXIT"
+        
+        if ("com.yourapp.ACTION_ENTER_HOME".equals(action)) {
+            // Logique lors de l'entrée
+        }
+    }
+}
+```
+
+### 📋 Configuration iOS
+
+Sur iOS, les événements sont émis via `NotificationCenter` :
+
+```swift
+NotificationCenter.default.addObserver(
+    forName: NSNotification.Name("ThunderBGGeofenceEvent"),
+    object: nil,
+    queue: .main
+) { notification in
+    if let userInfo = notification.userInfo,
+       let geofenceId = userInfo["geofenceId"] as? String,
+       let eventType = userInfo["eventType"] as? String {
+        // Gérer l'événement
+    }
+}
+```
+
+### 📝 Notes Techniques
+
+- **Android** : Utilise `GeofencingClient` de Google Play Services
+- **iOS** : Utilise `CLLocationManager` avec `CLCircularRegion`
+- **Précision** : Dépend de la précision GPS disponible
+- **Batterie** : Impact minimal grâce à la détection native du système
+- **Permissions** : Nécessite autorisation de localisation "Always"
+
+### ⚠️ Limitations
+
+- **Nombre de géofences** : Limité à 100 sur Android, 20 sur iOS
+- **Rayon minimum** : 100 mètres recommandé pour la précision
+- **Batterie** : Consommation plus élevée avec beaucoup de géofences actives
+
+---
+
 ### Phase 2 (En cours)
 - ✅ Support des images dynamiques
-- ⏳ Géofencing intégré
+- ✅ Géofencing intégré
 - ⏳ Métriques de performance
 
 ### Phase 3 (À venir)

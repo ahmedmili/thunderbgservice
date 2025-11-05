@@ -28,5 +28,15 @@ public final class FgConstants {
     // Dynamic UI bindings (JSON strings provided by app)
     public static final String EXTRA_VIEW_DATA_JSON = "extra_view_data_json"; // { "viewIdName": "text", ... }
     public static final String EXTRA_BUTTONS_JSON = "extra_buttons_json";     // [ { viewId: string, action: string, extras?: {k:v} } ]
+    
+    // Geofencing
+    public static final String ACTION_ADD_GEOFENCE = "com.ahmedmili.thunderbgservice.action.ADD_GEOFENCE";
+    public static final String ACTION_REMOVE_GEOFENCE = "com.ahmedmili.thunderbgservice.action.REMOVE_GEOFENCE";
+    public static final String EXTRA_GEOFENCE_ID = "extra_geofence_id";
+    public static final String EXTRA_GEOFENCE_LAT = "extra_geofence_lat";
+    public static final String EXTRA_GEOFENCE_LNG = "extra_geofence_lng";
+    public static final String EXTRA_GEOFENCE_RADIUS = "extra_geofence_radius";
+    public static final String EXTRA_GEOFENCE_ENTER_ACTION = "extra_geofence_enter_action";
+    public static final String EXTRA_GEOFENCE_EXIT_ACTION = "extra_geofence_exit_action";
 }
 

@@ -4,6 +4,16 @@ export interface RegisterTaskOptions {
   taskClass: string;  // Nom complet de la classe Java (ex: "com.yourpackage.MyTask")
   intervalMs: number; // Intervalle en millisecondes (minimum 1000)
 }
+export interface GeofenceOptions {
+  id: string;
+  latitude: number;
+  longitude: number;
+  radius: number; // en mètres
+  onEnter?: string; // Action broadcast/notification lors de l'entrée
+  onExit?: string; // Action broadcast/notification lors de la sortie
+  extras?: { [key: string]: string }; // Données supplémentaires
+}
+
 export interface ThunderBgServicePlugin {
   start(options: StartOptions): Promise<{ started: boolean }>;
   stop(): Promise<{ stopped: boolean }>;
@@ -13,5 +23,8 @@ export interface ThunderBgServicePlugin {
   getTaskResult(taskId: string): Promise<{ result: any | null }>;
   addListener(event: 'taskEvent', listener: (data: { taskId: string; data: any; timestamp: number }) => void): Promise<{ remove: () => void }>;
   removeAllListeners(): Promise<void>;
+  addGeofence(options: GeofenceOptions): Promise<{ added: boolean }>;
+  removeGeofence(geofenceId: string): Promise<{ removed: boolean }>;
+  removeAllGeofences(): Promise<{ removed: boolean }>;
 }
 

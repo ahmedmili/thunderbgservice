@@ -12,6 +12,7 @@ public class ThunderBgServicePlugin: CAPPlugin {
     private let notificationHelper = NotificationHelper.shared
     private let locationHelper = LocationHelper.shared
     private let taskManager = BackgroundTaskManager.shared
+    private let geofenceHelper = GeofenceHelper.shared
     
     // Stockage des résultats de tâches
     private var taskResults: [String: Any] = [:]
@@ -116,6 +117,9 @@ public class ThunderBgServicePlugin: CAPPlugin {
             taskManager.unregisterTask(taskId: taskId)
         }
         
+        // Supprimer toutes les géofences
+        geofenceHelper.removeAllGeofences()
+        
         call.resolve(["stopped": true])
     }
     
@@ -217,5 +221,64 @@ public class ThunderBgServicePlugin: CAPPlugin {
         ])
         
         print("ThunderBG: Task executed: \(taskId)")
+    }
+    
+    /**
+     * Ajoute une géofence
+     */
+    @objc func addGeofence(_ call: CAPPluginCall) {
+        guard let id = call.getString("id"),
+              let latitude = call.getDouble("latitude"),
+              let longitude = call.getDouble("longitude") else {
+            call.reject("id, latitude, and longitude are required")
+            return
+        }
+        
+        let radius = call.getDouble("radius") ?? 100.0
+        let onEnter = call.getString("onEnter")
+        let onExit = call.getString("onExit")
+        
+        // Extraire les extras
+        var extras: [String: String]?
+        if let extrasObj = call.getObject("extras") {
+            extras = extrasObj.compactMapValues { $0 as? String }
+        }
+        
+        let config = GeofenceHelper.GeofenceConfig(
+            id: id,
+            latitude: latitude,
+            longitude: longitude,
+            radius: radius,
+            onEnterAction: onEnter,
+            onExitAction: onExit,
+            extras: extras
+        )
+        
+        geofenceHelper.addGeofence(config: config)
+        
+        call.resolve(["added": true])
+    }
+    
+    /**
+     * Supprime une géofence
+     */
+    @objc func removeGeofence(_ call: CAPPluginCall) {
+        guard let geofenceId = call.getString("geofenceId") else {
+            call.reject("geofenceId is required")
+            return
+        }
+        
+        geofenceHelper.removeGeofence(id: geofenceId)
+        
+        call.resolve(["removed": true])
+    }
+    
+    /**
+     * Supprime toutes les géofences
+     */
+    @objc func removeAllGeofences(_ call: CAPPluginCall) {
+        geofenceHelper.removeAllGeofences()
+        
+        call.resolve(["removed": true])
     }
 }
