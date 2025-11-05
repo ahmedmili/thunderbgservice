@@ -14,6 +14,44 @@ export interface GeofenceOptions {
   extras?: { [key: string]: string }; // Données supplémentaires
 }
 
+export interface MetricsData {
+  // Métriques de tâches
+  taskExecutionCount?: number;
+  totalTaskExecutionTime?: number;
+  avgTaskExecutionTime?: number;
+  tasks?: { [taskId: string]: any };
+  
+  // Métriques de notifications
+  notificationUpdateCount?: number;
+  
+  // Métriques de localisation
+  locationUpdateCount?: number;
+  location?: any;
+  
+  // Métriques de géofences
+  geofenceTriggerCount?: number;
+  geofences?: any;
+  
+  // Métriques de service
+  serviceUptime?: number;
+  serviceUptimeHours?: number;
+  service?: any;
+  
+  // Métriques de batterie
+  currentBatteryLevel?: number;
+  batteryDrain?: number;
+  battery?: any;
+  
+  // Cache de ressources
+  resourceCache?: {
+    hits: number;
+    misses: number;
+    size: number;
+    hitRate: number;
+  };
+  cache?: string;
+}
+
 export interface ThunderBgServicePlugin {
   start(options: StartOptions): Promise<{ started: boolean }>;
   stop(): Promise<{ stopped: boolean }>;
@@ -26,5 +64,7 @@ export interface ThunderBgServicePlugin {
   addGeofence(options: GeofenceOptions): Promise<{ added: boolean }>;
   removeGeofence(geofenceId: string): Promise<{ removed: boolean }>;
   removeAllGeofences(): Promise<{ removed: boolean }>;
+  getMetrics(): Promise<{ metrics: MetricsData }>;
+  resetMetrics(): Promise<{ reset: boolean }>;
 }
 

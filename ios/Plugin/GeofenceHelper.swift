@@ -98,7 +98,9 @@ class GeofenceHelper: NSObject, CLLocationManagerDelegate {
             return
         }
         
-        // Émettre une notification pour l'événement
+        // Enregistrer le déclenchement dans les métriques
+        PerformanceMetrics.shared.recordGeofenceTrigger(eventType: "ENTER")
+        
         NotificationCenter.default.post(
             name: NSNotification.Name("ThunderBGGeofenceEvent"),
             object: nil,
@@ -121,7 +123,9 @@ class GeofenceHelper: NSObject, CLLocationManagerDelegate {
             return
         }
         
-        // Émettre une notification pour l'événement
+        // Enregistrer le déclenchement dans les métriques
+        PerformanceMetrics.shared.recordGeofenceTrigger(eventType: "EXIT")
+        
         NotificationCenter.default.post(
             name: NSNotification.Name("ThunderBGGeofenceEvent"),
             object: nil,

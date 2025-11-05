@@ -1,6 +1,7 @@
 import Foundation
 import Capacitor
 import UserNotifications
+import CoreLocation
 
 /**
  * Plugin principal pour ThunderBgService sur iOS
@@ -13,6 +14,7 @@ public class ThunderBgServicePlugin: CAPPlugin {
     private let locationHelper = LocationHelper.shared
     private let taskManager = BackgroundTaskManager.shared
     private let geofenceHelper = GeofenceHelper.shared
+    private let performanceMetrics = PerformanceMetrics.shared
     
     // Stockage des résultats de tâches
     private var taskResults: [String: Any] = [:]
@@ -52,6 +54,9 @@ public class ThunderBgServicePlugin: CAPPlugin {
             soundsEnabled: soundsEnabled
         )
         
+        // Enregistrer le démarrage du service
+        metrics.recordServiceStart()
+        
         // Configurer les actions de notification (boutons)
         if let buttons = buttons {
             notificationHelper.configureNotificationActions(buttons: buttons)
@@ -59,7 +64,15 @@ public class ThunderBgServicePlugin: CAPPlugin {
         
         // Démarrer la localisation si demandée
         if enableLocation {
+            var lastLocation: CLLocation?
             locationHelper.startLocationUpdates { [weak self] location in
+                // Calculer la distance depuis la dernière localisation
+                if let last = lastLocation {
+                    let distance = location.distance(from: last) / 1000.0 // en km
+                    self?.metrics.recordLocationUpdate(distanceKm: distance)
+                }
+                lastLocation = location
+                
                 // Émettre un événement de localisation
                 self?.notifyListeners("locationUpdate", data: [
                     "latitude": location.coordinate.latitude,
@@ -97,6 +110,9 @@ public class ThunderBgServicePlugin: CAPPlugin {
             viewData: viewData
         )
         
+        // Enregistrer la mise à jour
+        metrics.recordNotificationUpdate()
+        
         if let buttons = buttons {
             notificationHelper.configureNotificationActions(buttons: buttons)
         }
@@ -119,6 +135,9 @@ public class ThunderBgServicePlugin: CAPPlugin {
         
         // Supprimer toutes les géofences
         geofenceHelper.removeAllGeofences()
+        
+        // Enregistrer l'arrêt du service
+        metrics.recordServiceStop()
         
         call.resolve(["stopped": true])
     }
@@ -143,8 +162,13 @@ public class ThunderBgServicePlugin: CAPPlugin {
         let interval = TimeInterval(intervalMs) / 1000.0
         
         taskManager.registerTask(taskId: taskId, interval: interval) { [weak self] in
-            // Exécuter la tâche
+            // Exécuter la tâche avec mesure du temps
+            let startTime = Date()
             self?.executeTask(taskId: taskId)
+            let executionTime = Date().timeIntervalSince(startTime)
+            
+            // Enregistrer les métriques
+            self?.metrics.recordTaskExecution(taskId: taskId, executionTime: executionTime)
         }
         
         call.resolve(["registered": true])
@@ -280,5 +304,21 @@ public class ThunderBgServicePlugin: CAPPlugin {
         geofenceHelper.removeAllGeofences()
         
         call.resolve(["removed": true])
+    }
+    
+    /**
+     * Obtient toutes les métriques de performance
+     */
+    @objc func getMetrics(_ call: CAPPluginCall) {
+        let allMetrics = performanceMetrics.getAllMetrics()
+        call.resolve(["metrics": allMetrics])
+    }
+    
+    /**
+     * Réinitialise toutes les métriques
+     */
+    @objc func resetMetrics(_ call: CAPPluginCall) {
+        performanceMetrics.reset()
+        call.resolve(["reset": true])
     }
 }

@@ -62,6 +62,11 @@ public class GeofenceBroadcastReceiver extends BroadcastReceiver {
                 }
                 
                 context.sendBroadcast(broadcastIntent);
+                
+                // Enregistrer le déclenchement dans les métriques
+                com.ahmedmili.thunderbgservice.metrics.PerformanceMetrics.getInstance(context)
+                    .recordGeofenceTrigger(eventType);
+                
                 Log.i(TAG, "Geofence event: " + eventType + " -> " + action + " (id: " + geofence.getRequestId() + ")");
             }
         }

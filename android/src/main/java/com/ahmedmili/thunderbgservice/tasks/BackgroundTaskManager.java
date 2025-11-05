@@ -39,10 +39,20 @@ public class BackgroundTaskManager {
         taskInstances.put(taskId, task);
         ScheduledFuture<?> future = scheduler.scheduleAtFixedRate(
             () -> {
+                long startTime = System.currentTimeMillis();
                 try {
                     task.execute(context.getApplicationContext(), taskId);
-                    Log.d(TAG, "Task executed: " + taskId);
+                    long executionTime = System.currentTimeMillis() - startTime;
+                    
+                    // Enregistrer les métriques
+                    com.ahmedmili.thunderbgservice.metrics.PerformanceMetrics.getInstance(context)
+                        .recordTaskExecution(taskId, executionTime);
+                    
+                    Log.d(TAG, "Task executed: " + taskId + " (time: " + executionTime + "ms)");
                 } catch (Exception e) {
+                    long executionTime = System.currentTimeMillis() - startTime;
+                    com.ahmedmili.thunderbgservice.metrics.PerformanceMetrics.getInstance(context)
+                        .recordTaskExecution(taskId, executionTime);
                     Log.e(TAG, "Error executing task: " + taskId, e);
                 }
             },

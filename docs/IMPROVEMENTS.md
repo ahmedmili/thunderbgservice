@@ -547,10 +547,89 @@ NotificationCenter.default.addObserver(
 
 ---
 
-### Phase 2 (En cours)
+### Phase 2 (Terminé)
 - ✅ Support des images dynamiques
 - ✅ Géofencing intégré
-- ⏳ Métriques de performance
+- ✅ Métriques de performance
+
+## ✅ Amélioration #6 : Métriques de Performance
+
+**Version** : 0.1.4+  
+**Date** : 2024
+
+### 🎯 Problème Résolu
+
+Avant cette amélioration, il était difficile de monitorer les performances du plugin, l'utilisation de la batterie, et les statistiques d'utilisation. Les développeurs n'avaient pas de visibilité sur l'impact du plugin sur l'appareil.
+
+### ✨ Solution Implémentée
+
+Un système complet de collecte de métriques qui permet de :
+- **Suivre les performances** : Temps d'exécution des tâches, nombre d'exécutions
+- **Monitorer la batterie** : Niveau actuel, consommation estimée
+- **Statistiques d'utilisation** : Notifications, localisation, géofences
+- **Cache de ressources** : Hit rate, taille du cache
+- **Temps d'activité** : Durée totale du service
+
+### 📊 Fonctionnalités
+
+- ✅ **Collecte automatique** : Les métriques sont collectées en temps réel
+- ✅ **Persistance** : Sauvegarde dans SharedPreferences (Android) / UserDefaults (iOS)
+- ✅ **API simple** : Méthodes `getMetrics()` et `resetMetrics()`
+- ✅ **Cross-platform** : Fonctionne sur Android et iOS
+- ✅ **Détails par tâche** : Statistiques individuelles pour chaque tâche
+
+### 🔧 Utilisation
+
+#### Récupérer les métriques
+
+```typescript
+import { ThunderBgService } from '@ahmed-mili/capacitor-thunder-bg-service';
+
+const { metrics } = await ThunderBgService.getMetrics();
+
+console.log('Tâches exécutées:', metrics.taskExecutionCount);
+console.log('Temps moyen:', metrics.avgTaskExecutionTime, 'ms');
+console.log('Batterie:', metrics.currentBatteryLevel, '%');
+console.log('Temps d\'activité:', metrics.serviceUptimeHours, 'heures');
+```
+
+#### Réinitialiser les métriques
+
+```typescript
+await ThunderBgService.resetMetrics();
+```
+
+### 📋 Métriques Collectées
+
+#### Android
+- **Tâches** : Nombre d'exécutions, temps total, temps moyen
+- **Notifications** : Nombre de mises à jour
+- **Localisation** : Nombre de mises à jour
+- **Géofences** : Nombre de déclenchements par type
+- **Service** : Temps d'activité total
+- **Batterie** : Niveau actuel, consommation depuis le démarrage
+- **Cache** : Hits, misses, hit rate, taille
+
+#### iOS
+- **Tâches** : Statistiques par taskId (nombre, temps, moyenne)
+- **Localisation** : Nombre de mises à jour, distance totale
+- **Notifications** : Nombre de mises à jour
+- **Géofences** : Nombre total et par type
+- **Service** : Temps d'activité total
+- **Batterie** : Niveau actuel, estimation de consommation
+
+### 📝 Notes Techniques
+
+- **Performance** : Collecte légère, impact minimal sur les performances
+- **Persistance** : Les métriques survivent aux redémarrages de l'app
+- **Thread-safe** : Utilisation d'AtomicLong (Android) pour la sécurité des threads
+- **Batterie** : Estimation basée sur le temps d'activité et le nombre de tâches
+
+### ⚠️ Limitations
+
+- **Estimation** : La consommation de batterie est une estimation, pas une mesure exacte
+- **Précision** : Les temps d'exécution peuvent varier selon la charge du système
+- **iOS** : Les métriques de batterie nécessitent que l'app soit active
 
 ### Phase 3 (À venir)
 - ⏳ Thèmes dynamiques

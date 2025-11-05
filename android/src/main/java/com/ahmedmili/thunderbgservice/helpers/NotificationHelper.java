@@ -184,6 +184,12 @@ public class NotificationHelper {
         }
         androidx.core.app.NotificationManagerCompat.from(context)
                 .notify(NOTIFICATION_ID_FOREGROUND, b.build());
+        
+        // Enregistrer la mise à jour dans les métriques
+        try {
+            com.ahmedmili.thunderbgservice.metrics.PerformanceMetrics.getInstance(context)
+                .recordNotificationUpdate();
+        } catch (Exception ignored) {}
     }
 
     private void applyDynamicBindings(RemoteViews views, String viewDataJson, String buttonsJson) {

@@ -11,6 +11,7 @@ import com.getcapacitor.PluginMethod;
 import com.getcapacitor.annotation.CapacitorPlugin;
 import com.ahmedmili.thunderbgservice.tasks.TaskResultStorage;
 import com.ahmedmili.thunderbgservice.geofencing.GeofenceManager;
+import com.ahmedmili.thunderbgservice.metrics.PerformanceMetrics;
 
 @CapacitorPlugin(name = "ThunderBgService")
 public class ThunderBgServicePlugin extends Plugin {
@@ -243,6 +244,43 @@ public class ThunderBgServicePlugin extends Plugin {
         
         JSObject ret = new JSObject();
         ret.put("removed", true);
+        call.resolve(ret);
+    }
+    
+    @PluginMethod
+    public void getMetrics(PluginCall call) {
+        try {
+            PerformanceMetrics metrics = PerformanceMetrics.getInstance(getContext());
+            org.json.JSONObject metricsJson = metrics.getMetricsAsJson();
+            
+            JSObject ret = new JSObject();
+            // Convertir JSONObject en JSObject
+            try {
+                java.util.Iterator<String> keys = metricsJson.keys();
+                while (keys.hasNext()) {
+                    String key = keys.next();
+                    Object value = metricsJson.get(key);
+                    ret.put(key, value);
+                }
+            } catch (Exception e) {
+                // Fallback: mettre le JSON string
+                ret.put("metrics", metricsJson.toString());
+            }
+            
+            call.resolve(ret);
+        } catch (Exception e) {
+            call.reject("Error getting metrics: " + e.getMessage());
+        }
+    }
+    
+    @PluginMethod
+    public void resetMetrics(PluginCall call) {
+        com.ahmedmili.thunderbgservice.metrics.PerformanceMetrics
+            .getInstance(getContext())
+            .reset();
+        
+        JSObject ret = new JSObject();
+        ret.put("reset", true);
         call.resolve(ret);
     }
 }
