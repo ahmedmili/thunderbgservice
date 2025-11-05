@@ -15,6 +15,7 @@ public class ThunderBgServicePlugin: CAPPlugin {
     private let taskManager = BackgroundTaskManager.shared
     private let geofenceHelper = GeofenceHelper.shared
     private let performanceMetrics = PerformanceMetrics.shared
+    private let themeManager = ThemeManager.shared
     
     // Stockage des résultats de tâches
     private var taskResults: [String: Any] = [:]
@@ -320,5 +321,66 @@ public class ThunderBgServicePlugin: CAPPlugin {
     @objc func resetMetrics(_ call: CAPPluginCall) {
         performanceMetrics.reset()
         call.resolve(["reset": true])
+    }
+    
+    /**
+     * Définit le thème actuel
+     */
+    @objc func setTheme(_ call: CAPPluginCall) {
+        guard let themeName = call.getString("themeName") else {
+            call.reject("themeName is required")
+            return
+        }
+        
+        let success = themeManager.setTheme(themeName)
+        call.resolve(["success": success, "themeName": themeName])
+    }
+    
+    /**
+     * Crée un nouveau thème personnalisé
+     */
+    @objc func createTheme(_ call: CAPPluginCall) {
+        guard let themeName = call.getString("themeName"),
+              !themeName.isEmpty else {
+            call.reject("themeName is required")
+            return
+        }
+        
+        guard let themeDict = call.getObject("theme") else {
+            call.reject("theme is required")
+            return
+        }
+        
+        guard let config = ThemeConfig.fromDictionary(themeDict) else {
+            call.reject("Invalid theme configuration")
+            return
+        }
+        
+        let success = themeManager.createTheme(themeName, config: config)
+        call.resolve(["success": success])
+    }
+    
+    /**
+     * Obtient le thème actuel
+     */
+    @objc func getCurrentTheme(_ call: CAPPluginCall) {
+        if let theme = themeManager.getCurrentTheme() {
+            call.resolve(theme.toDictionary())
+        } else {
+            call.resolve([:])
+        }
+    }
+    
+    /**
+     * Supprime un thème personnalisé
+     */
+    @objc func removeTheme(_ call: CAPPluginCall) {
+        guard let themeName = call.getString("themeName") else {
+            call.reject("themeName is required")
+            return
+        }
+        
+        let success = themeManager.removeTheme(themeName)
+        call.resolve(["success": success])
     }
 }

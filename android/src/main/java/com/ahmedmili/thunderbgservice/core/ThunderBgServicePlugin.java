@@ -12,6 +12,8 @@ import com.getcapacitor.annotation.CapacitorPlugin;
 import com.ahmedmili.thunderbgservice.tasks.TaskResultStorage;
 import com.ahmedmili.thunderbgservice.geofencing.GeofenceManager;
 import com.ahmedmili.thunderbgservice.metrics.PerformanceMetrics;
+import com.ahmedmili.thunderbgservice.theme.ThemeManager;
+import com.ahmedmili.thunderbgservice.theme.ThemeConfig;
 
 @CapacitorPlugin(name = "ThunderBgService")
 public class ThunderBgServicePlugin extends Plugin {
@@ -281,6 +283,110 @@ public class ThunderBgServicePlugin extends Plugin {
         
         JSObject ret = new JSObject();
         ret.put("reset", true);
+        call.resolve(ret);
+    }
+    
+    @PluginMethod
+    public void setTheme(PluginCall call) {
+        String themeName = call.getString("themeName", "default");
+        boolean success = ThemeManager.getInstance(getContext()).setTheme(themeName);
+        
+        JSObject ret = new JSObject();
+        ret.put("success", success);
+        if (success) {
+            ret.put("themeName", themeName);
+        }
+        call.resolve(ret);
+    }
+    
+    @PluginMethod
+    public void createTheme(PluginCall call) {
+        try {
+            String themeName = call.getString("themeName", "");
+            if (themeName.isEmpty()) {
+                call.reject("themeName is required");
+                return;
+            }
+            
+            JSObject themeObj = call.getObject("theme", null);
+            if (themeObj == null) {
+                call.reject("theme is required");
+                return;
+            }
+            
+            ThemeConfig theme = new ThemeConfig(themeName);
+            if (themeObj.has("backgroundColor")) {
+                theme.setBackgroundColor(themeObj.getString("backgroundColor"));
+            }
+            if (themeObj.has("titleColor")) {
+                theme.setTitleColor(themeObj.getString("titleColor"));
+            }
+            if (themeObj.has("subtitleColor")) {
+                theme.setSubtitleColor(themeObj.getString("subtitleColor"));
+            }
+            if (themeObj.has("accentColor")) {
+                theme.setAccentColor(themeObj.getString("accentColor"));
+            }
+            if (themeObj.has("iconTintColor")) {
+                theme.setIconTintColor(themeObj.getString("iconTintColor"));
+            }
+            if (themeObj.has("timerColor")) {
+                theme.setTimerColor(themeObj.getString("timerColor"));
+            }
+            if (themeObj.has("buttonBackgroundColor")) {
+                theme.setButtonBackgroundColor(themeObj.getString("buttonBackgroundColor"));
+            }
+            if (themeObj.has("buttonTextColor")) {
+                theme.setButtonTextColor(themeObj.getString("buttonTextColor"));
+            }
+            if (themeObj.has("fontSize")) {
+                theme.setFontSize(themeObj.getInteger("fontSize"));
+            }
+            if (themeObj.has("fontFamily")) {
+                theme.setFontFamily(themeObj.getString("fontFamily"));
+            }
+            
+            boolean success = ThemeManager.getInstance(getContext()).createTheme(themeName, theme);
+            
+            JSObject ret = new JSObject();
+            ret.put("success", success);
+            call.resolve(ret);
+        } catch (Exception e) {
+            call.reject("Error creating theme: " + e.getMessage());
+        }
+    }
+    
+    @PluginMethod
+    public void getCurrentTheme(PluginCall call) {
+        ThemeConfig theme = ThemeManager.getInstance(getContext()).getCurrentTheme();
+        JSObject ret = new JSObject();
+        if (theme != null) {
+            ret.put("name", theme.getName());
+            ret.put("backgroundColor", theme.getBackgroundColor());
+            ret.put("titleColor", theme.getTitleColor());
+            ret.put("subtitleColor", theme.getSubtitleColor());
+            ret.put("accentColor", theme.getAccentColor());
+            ret.put("iconTintColor", theme.getIconTintColor());
+            ret.put("timerColor", theme.getTimerColor());
+            ret.put("buttonBackgroundColor", theme.getButtonBackgroundColor());
+            ret.put("buttonTextColor", theme.getButtonTextColor());
+            ret.put("fontSize", theme.getFontSize());
+            ret.put("fontFamily", theme.getFontFamily());
+        }
+        call.resolve(ret);
+    }
+    
+    @PluginMethod
+    public void removeTheme(PluginCall call) {
+        String themeName = call.getString("themeName", "");
+        if (themeName.isEmpty()) {
+            call.reject("themeName is required");
+            return;
+        }
+        
+        boolean success = ThemeManager.getInstance(getContext()).removeTheme(themeName);
+        JSObject ret = new JSObject();
+        ret.put("success", success);
         call.resolve(ret);
     }
 }

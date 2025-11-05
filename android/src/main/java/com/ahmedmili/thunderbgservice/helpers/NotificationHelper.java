@@ -1,6 +1,8 @@
 package com.ahmedmili.thunderbgservice.helpers;
 
 import static com.ahmedmili.thunderbgservice.core.FgConstants.*;
+import com.ahmedmili.thunderbgservice.theme.ThemeManager;
+import com.ahmedmili.thunderbgservice.theme.ThemeConfig;
 
 import android.app.Notification;
 import android.app.PendingIntent;
@@ -108,6 +110,9 @@ public class NotificationHelper {
         if (views != null) {
             if (titleViewId != null && title != null) views.setTextViewText(titleViewId, title);
             if (subtitleViewId != null && subtitle != null) views.setTextViewText(subtitleViewId, subtitle);
+            
+            // Appliquer le thème
+            applyTheme(views);
         }
         // Dynamic bindings
         if (views != null) applyDynamicBindings(views, viewDataJson, buttonsJson);
@@ -168,6 +173,10 @@ public class NotificationHelper {
             if (titleViewId != null && title != null) views.setTextViewText(titleViewId, title);
             if (subtitleViewId != null && subtitle != null) views.setTextViewText(subtitleViewId, subtitle);
             if (timerViewId != null && timerText != null) views.setTextViewText(timerViewId, timerText);
+            
+            // Appliquer le thème
+            applyTheme(views);
+            
             applyDynamicBindings(views, viewDataJson, buttonsJson);
         }
 
@@ -217,14 +226,70 @@ public class NotificationHelper {
                             views.setTextViewText(id, valueStr);
                             Log.d("ThunderBG", "Set text viewData[" + viewIdName + "]=" + valueStr + " (id=" + id + ")");
                         }
-                    } else {
-                        Log.w("ThunderBG", "View ID not found: " + viewIdName + " in package " + pkg);
-                    }
+                } else {
+                    Log.w("ThunderBG", "View ID not found: " + viewIdName + " in package " + pkg);
                 }
+            }
+        } catch (Exception e) {
+            Log.w("ThunderBG", "Failed parsing viewDataJson", e);
+        }
+    }
+    
+    /**
+     * Applique le thème actuel aux RemoteViews
+     */
+    private void applyTheme(RemoteViews views) {
+        ThemeConfig theme = ThemeManager.getInstance(context).getCurrentTheme();
+        if (theme == null) {
+            return;
+        }
+        
+        String pkg = context.getPackageName();
+        
+        // Appliquer les couleurs aux vues si elles existent
+        if (titleViewId != null && theme.getTitleColor() != null) {
+            try {
+                int color = ThemeManager.parseColor(theme.getTitleColor());
+                views.setTextColor(titleViewId, color);
             } catch (Exception e) {
-                Log.w("ThunderBG", "Failed parsing viewDataJson", e);
+                Log.w("ThunderBG", "Error applying title color", e);
             }
         }
+        
+        if (subtitleViewId != null && theme.getSubtitleColor() != null) {
+            try {
+                int color = ThemeManager.parseColor(theme.getSubtitleColor());
+                views.setTextColor(subtitleViewId, color);
+            } catch (Exception e) {
+                Log.w("ThunderBG", "Error applying subtitle color", e);
+            }
+        }
+        
+        if (timerViewId != null) {
+            String timerColor = theme.getTimerColor() != null ? theme.getTimerColor() : theme.getAccentColor();
+            if (timerColor != null) {
+                try {
+                    int color = ThemeManager.parseColor(timerColor);
+                    views.setTextColor(timerViewId, color);
+                } catch (Exception e) {
+                    Log.w("ThunderBG", "Error applying timer color", e);
+                }
+            }
+        }
+        
+        // Appliquer la couleur de fond si un layout root existe
+        if (theme.getBackgroundColor() != null && customLayoutId != null) {
+            try {
+                // Essayer de trouver un ID de layout root (généralement @android:id/content ou le premier LinearLayout)
+                int rootId = android.R.id.content;
+                int color = ThemeManager.parseColor(theme.getBackgroundColor());
+                views.setInt(rootId, "setBackgroundColor", color);
+            } catch (Exception e) {
+                // Ignorer si on ne peut pas appliquer la couleur de fond
+                Log.d("ThunderBG", "Could not apply background color to layout");
+            }
+        }
+    }
         // Button bindings
         if (buttonsJson != null && !buttonsJson.isEmpty()) {
             try {

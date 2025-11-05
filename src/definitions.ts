@@ -52,6 +52,20 @@ export interface MetricsData {
   cache?: string;
 }
 
+export interface ThemeConfig {
+  name: string;
+  backgroundColor?: string; // Couleur hexadécimale (ex: "#FFFFFF")
+  titleColor?: string;
+  subtitleColor?: string;
+  accentColor?: string;
+  iconTintColor?: string;
+  timerColor?: string;
+  buttonBackgroundColor?: string;
+  buttonTextColor?: string;
+  fontSize?: number;
+  fontFamily?: string;
+}
+
 export interface ThunderBgServicePlugin {
   start(options: StartOptions): Promise<{ started: boolean }>;
   stop(): Promise<{ stopped: boolean }>;
@@ -66,5 +80,9 @@ export interface ThunderBgServicePlugin {
   removeAllGeofences(): Promise<{ removed: boolean }>;
   getMetrics(): Promise<{ metrics: MetricsData }>;
   resetMetrics(): Promise<{ reset: boolean }>;
+  setTheme(themeName: string): Promise<{ success: boolean; themeName?: string }>;
+  createTheme(themeName: string, theme: ThemeConfig): Promise<{ success: boolean }>;
+  getCurrentTheme(): Promise<ThemeConfig>;
+  removeTheme(themeName: string): Promise<{ success: boolean }>;
 }
 

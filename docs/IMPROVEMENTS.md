@@ -631,10 +631,105 @@ await ThunderBgService.resetMetrics();
 - **Précision** : Les temps d'exécution peuvent varier selon la charge du système
 - **iOS** : Les métriques de batterie nécessitent que l'app soit active
 
-### Phase 3 (À venir)
-- ⏳ Thèmes dynamiques
+### Phase 3 (En cours)
+- ✅ Thèmes dynamiques
 - ⏳ Chiffrement des données
 - ⏳ Intégrations (Firebase, webhooks)
+
+## ✅ Amélioration #7 : Thèmes Dynamiques
+
+**Version** : 0.1.5+  
+**Date** : 2024
+
+### 🎯 Problème Résolu
+
+Avant cette amélioration, les notifications avaient une apparence fixe définie dans les layouts XML. Il était difficile de personnaliser les couleurs et styles selon différents contextes (état de l'application, préférences utilisateur, etc.).
+
+### ✨ Solution Implémentée
+
+Un système complet de thèmes dynamiques qui permet de :
+- **Thèmes prédéfinis** : 6 thèmes par défaut (default, dark, blue, green, orange, red)
+- **Thèmes personnalisés** : Créer vos propres thèmes avec couleurs personnalisées
+- **Changement en temps réel** : Appliquer un thème sans redémarrer le service
+- **Persistance** : Les thèmes sont sauvegardés et restaurés automatiquement
+- **Cross-platform** : Fonctionne sur Android et iOS
+
+### 📊 Fonctionnalités
+
+- ✅ **Thèmes prédéfinis** : 6 thèmes optimisés pour différents contextes
+- ✅ **Thèmes personnalisés** : Création de thèmes avec couleurs hexadécimales
+- ✅ **Application automatique** : Les thèmes sont appliqués automatiquement aux notifications
+- ✅ **Gestion complète** : Créer, modifier, supprimer des thèmes
+- ✅ **Couleurs configurables** : Fond, texte, accent, icônes, boutons
+
+### 🔧 Utilisation
+
+#### Utiliser un thème prédéfini
+
+```typescript
+import { ThunderBgService } from '@ahmed-mili/capacitor-thunder-bg-service';
+
+// Changer le thème
+await ThunderBgService.setTheme('dark');
+
+// Mettre à jour la notification pour appliquer le thème
+await ThunderBgService.update({
+  notificationTitle: 'Service Actif',
+  notificationSubtitle: 'Thème sombre appliqué',
+});
+```
+
+#### Créer un thème personnalisé
+
+```typescript
+await ThunderBgService.createTheme('my_theme', {
+  name: 'my_theme',
+  backgroundColor: '#F5F5F5',
+  titleColor: '#1A1A1A',
+  subtitleColor: '#666666',
+  accentColor: '#FF6B6B',
+  iconTintColor: '#FF6B6B',
+  timerColor: '#FF6B6B',
+});
+
+// Utiliser le nouveau thème
+await ThunderBgService.setTheme('my_theme');
+```
+
+#### Thèmes selon l'état
+
+```typescript
+// Application de livraison
+if (state === 'online') {
+  await ThunderBgService.setTheme('green');
+} else if (state === 'waiting') {
+  await ThunderBgService.setTheme('orange');
+} else if (state === 'urgent') {
+  await ThunderBgService.setTheme('red');
+}
+```
+
+### 📋 Thèmes Prédéfinis
+
+1. **default** : Thème clair standard (blanc, texte noir)
+2. **dark** : Thème sombre (fond sombre, texte blanc)
+3. **blue** : Thème bleu (fond bleu clair, texte bleu foncé)
+4. **green** : Thème vert (pour état "en ligne" / "disponible")
+5. **orange** : Thème orange (pour état "en attente")
+6. **red** : Thème rouge (pour état "urgent")
+
+### 📝 Notes Techniques
+
+- **Android** : Les couleurs sont appliquées via `RemoteViews.setTextColor()` et `NotificationCompat.Builder.setColor()`
+- **iOS** : Les informations de thème sont stockées dans `userInfo` pour une utilisation personnalisée
+- **Format couleurs** : Format hexadécimal (#RRGGBB)
+- **Performance** : Application des thèmes en temps réel, pas de redémarrage nécessaire
+
+### ⚠️ Limitations
+
+- **Layout personnalisé** : Les thèmes fonctionnent mieux avec des layouts personnalisés
+- **iOS** : Les notifications iOS ont des limitations sur la personnalisation visuelle
+- **Couleurs de fond** : L'application de la couleur de fond dépend de la structure du layout
 
 ---
 
