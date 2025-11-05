@@ -1,0 +1,10 @@
+node_modules/
+dist/
+coverage/
+*.d.ts
+*.js
+*.tgz
+build/
+android/
+ios/
+

@@ -32,7 +32,14 @@
     "build": "tsc -p tsconfig.json",
     "clean": "rimraf dist",
     "prepare": "npm run build",
-    "prepublishOnly": "npm run build"
+    "prepublishOnly": "npm run build",
+    "test": "jest",
+    "test:watch": "jest --watch",
+    "test:coverage": "jest --coverage",
+    "lint": "eslint src/**/*.ts",
+    "lint:fix": "eslint src/**/*.ts --fix",
+    "docs": "typedoc src/index.ts --out docs/api",
+    "docs:watch": "typedoc --watch src/index.ts --out docs/api"
   },
   "capacitor": {
     "android": { "src": "android" },
@@ -44,7 +51,14 @@
   "devDependencies": {
     "@capacitor/core": "^7.0.0",
     "typescript": "^5.6.3",
-    "rimraf": "^5.0.5"
+    "rimraf": "^5.0.5",
+    "@types/jest": "^29.5.12",
+    "@typescript-eslint/eslint-plugin": "^6.21.0",
+    "@typescript-eslint/parser": "^6.21.0",
+    "eslint": "^8.56.0",
+    "jest": "^29.7.0",
+    "ts-jest": "^29.1.2",
+    "typedoc": "^0.26.0"
   }
 }
 

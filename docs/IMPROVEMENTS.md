@@ -631,10 +631,8 @@ await ThunderBgService.resetMetrics();
 - **Précision** : Les temps d'exécution peuvent varier selon la charge du système
 - **iOS** : Les métriques de batterie nécessitent que l'app soit active
 
-### Phase 3 (En cours)
+### Phase 3 (Terminé)
 - ✅ Thèmes dynamiques
-- ⏳ Chiffrement des données
-- ⏳ Intégrations (Firebase, webhooks)
 
 ## ✅ Amélioration #7 : Thèmes Dynamiques
 
@@ -696,19 +694,6 @@ await ThunderBgService.createTheme('my_theme', {
 await ThunderBgService.setTheme('my_theme');
 ```
 
-#### Thèmes selon l'état
-
-```typescript
-// Application de livraison
-if (state === 'online') {
-  await ThunderBgService.setTheme('green');
-} else if (state === 'waiting') {
-  await ThunderBgService.setTheme('orange');
-} else if (state === 'urgent') {
-  await ThunderBgService.setTheme('red');
-}
-```
-
 ### 📋 Thèmes Prédéfinis
 
 1. **default** : Thème clair standard (blanc, texte noir)
@@ -733,11 +718,124 @@ if (state === 'online') {
 
 ---
 
+### Phase 4 (En cours)
+- ⏳ Chiffrement des données
+- ⏳ Intégrations (Firebase, webhooks)
+
+## ✅ Amélioration #8 : Infrastructure de Tests et Qualité
+
+**Version** : 0.1.6+  
+**Date** : 2024
+
+### 🎯 Problème Résolu
+
+Avant cette amélioration, le plugin n'avait aucune infrastructure de tests, ce qui rendait difficile la vérification de la qualité du code et la détection précoce des bugs. Il n'y avait pas non plus de linting automatique ni de CI/CD.
+
+### ✨ Solution Implémentée
+
+Une infrastructure complète de qualité logicielle incluant :
+- **Tests unitaires** : Jest + TypeScript pour tester toutes les fonctionnalités
+- **Tests d'intégration** : Tests des interactions Capacitor
+- **Linting** : ESLint pour TypeScript avec règles strictes
+- **Code quality** : Detekt pour Android (Java/Kotlin)
+- **CI/CD** : GitHub Actions avec pipeline automatisé
+- **Documentation API** : Génération automatique avec TypeDoc
+
+### 📊 Fonctionnalités
+
+- ✅ **Suite de tests complète** : Tests unitaires et d'intégration
+- ✅ **Couverture de code** : Seuil de 70% minimum
+- ✅ **Linting automatique** : ESLint configuré avec règles TypeScript
+- ✅ **CI/CD Pipeline** : Tests automatiques sur push/PR
+- ✅ **Documentation auto-générée** : API docs avec TypeDoc
+- ✅ **Code quality Android** : Detekt pour analyse statique
+
+### 🔧 Utilisation
+
+#### Exécuter les tests
+
+```bash
+# Tests unitaires
+npm test
+
+# Tests en mode watch
+npm run test:watch
+
+# Tests avec couverture
+npm run test:coverage
+```
+
+#### Linting
+
+```bash
+# Vérifier le code
+npm run lint
+
+# Corriger automatiquement
+npm run lint:fix
+```
+
+#### Documentation API
+
+```bash
+# Générer la documentation
+npm run docs
+
+# Mode watch
+npm run docs:watch
+```
+
+### 📋 Structure des Tests
+
+```
+__tests__/
+├── setup.ts              # Configuration globale Jest
+├── definitions.test.ts   # Tests des types TypeScript
+├── index.test.ts         # Tests du plugin principal
+└── helpers.test.ts       # Tests des helpers
+```
+
+### 📝 Configuration CI/CD
+
+Le pipeline GitHub Actions exécute automatiquement :
+1. **Tests** : Sur Node.js 18.x et 20.x
+2. **Linting** : ESLint pour vérifier le code
+3. **Build** : Compilation TypeScript
+4. **Coverage** : Rapport de couverture de code
+5. **Build Android** : Compilation de la bibliothèque Android
+6. **Check iOS** : Vérification de syntaxe Swift
+7. **Security Scan** : Scan de vulnérabilités
+8. **Documentation** : Génération et déploiement
+
+### 📝 Notes Techniques
+
+- **Jest** : Framework de test avec support TypeScript complet
+- **ESLint** : Règles strictes pour maintenir la qualité du code
+- **TypeDoc** : Génération automatique de documentation depuis les types
+- **Detekt** : Analyse statique pour code Android
+- **Coverage** : Seuil minimum de 70% pour branches, fonctions, lignes
+
+### ⚠️ Limitations
+
+- **Tests natifs** : Les tests Android/iOS nécessitent des outils spécifiques
+- **Mocking** : Certaines fonctionnalités natives nécessitent des mocks complexes
+- **Coverage** : La couverture peut varier selon les fonctionnalités testées
+
+---
+
+### Phase 4 (En cours)
+- ⏳ Chiffrement des données
+- ⏳ Intégrations (Firebase, webhooks)
+
+---
+
 ## 📚 Documentation Associée
 
 - [Guide de démarrage rapide](./QUICK_START.md)
 - [Référence API complète](./API_REFERENCE.md)
 - [Cas d'usage pratiques](./USE_CASES.md)
+- [Guide de tests](../README_TESTING.md)
+- [Guide de contribution](../CONTRIBUTING.md)
 
 ---
 

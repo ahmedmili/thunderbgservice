@@ -1,2 +1,39 @@
-node_modules
-package-lock.json
+node_modules/
+dist/
+coverage/
+*.log
+.DS_Store
+*.tgz
+android/build/
+android/.gradle/
+ios/Pods/
+ios/.swiftpm/
+.vscode/
+.idea/
+*.iml
+*.swp
+*.swo
+*~
+.cache/
+temp/
+*.tmp
+
+# Test coverage
+coverage/
+.nyc_output/
+
+# Documentation
+docs/api/
+
+# Environment
+.env
+.env.local
+
+# Build artifacts
+*.aar
+*.apk
+*.ipa
+
+# OS
+Thumbs.db
+.DS_Store

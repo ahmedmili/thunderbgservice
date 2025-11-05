@@ -1,0 +1,71 @@
+# Configuration Detekt pour l'analyse de code Java/Kotlin
+build:
+  maxIssues: 10
+  weights:
+    # complexity: 2
+    # LongParameterList: 1
+    # style: 1
+    # comments: 1
+
+processors:
+  active: true
+  exclude:
+    - 'DetektProgressListener'
+    - 'ProjectMetricProcessor'
+    - 'ComplexityProcessor'
+
+output-reports:
+  active: true
+  exclude-split-classes: false
+  exclude-split-packages: false
+  enableHTML: true
+  enableMD: true
+  enableTXT: true
+  enableXML: true
+
+rule-sets:
+  - {name: 'comments', enabled: true}
+  - {name: 'complexity', enabled: true}
+  - {name: 'coroutines', enabled: false}
+  - {name: 'empty-blocks', enabled: true}
+  - {name: 'exceptions', enabled: true}
+  - {name: 'formatting', enabled: true}
+  - {name: 'naming', enabled: true}
+  - {name: 'performance', enabled: true}
+  - {name: 'potential-bugs', enabled: true}
+  - {name: 'style', enabled: true}
+
+complexity:
+  CyclomaticComplexMethod:
+    threshold: 15
+  LongMethod:
+    threshold: 60
+  LongParameterList:
+    threshold: 6
+  TooManyFunctions:
+    threshold: 11
+
+naming:
+  FunctionNaming:
+    active: true
+  ClassNaming:
+    active: true
+  PackageNaming:
+    active: true
+  VariableNaming:
+    active: true
+
+style:
+  MagicNumber:
+    ignoreNumbers: ['-1', '0', '1', '2']
+  MaxLineLength:
+    maxLineLength: 120
+    excludePackageDeclarations: true
+    excludeImportStatements: true
+    excludeCommentStatements: true
+
+excludes:
+  - '**/build/**'
+  - '**/build.gradle'
+  - '**/detekt.yml'
+
