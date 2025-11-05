@@ -4,7 +4,7 @@
     "type": "AAPT_FRIENDLY_MERGED_MANIFESTS",
     "kind": "Directory"
   },
-  "applicationId": "com.webify.thunderbgservice",
+  "applicationId": "com.ahmedmili.thunderbgservice",
   "variantName": "debug",
   "elements": [
     {

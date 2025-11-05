@@ -1,0 +1,34 @@
+{
+    "logs": [
+        {
+            "outputFile": "com.webify.thunderbgservice.ahmed-mili-capacitor-thunder-bg-service-release-34:/values-h320dp-port-v13/values-h320dp-port-v13.xml",
+            "map": [
+                {
+                    "source": "C:\\Users\\Amiradou\\.gradle\\caches\\8.11.1\\transforms\\cbd38ed75a1d71a0db60c0e67af95142\\transformed\\material-1.12.0\\res\\values-h320dp-port-v13\\values-h320dp-port-v13.xml",
+                    "from": {
+                        "startLines": "2",
+                        "startColumns": "4",
+                        "startOffsets": "55",
+                        "endColumns": "63",
+                        "endOffsets": "114"
+                    }
+                }
+            ]
+        },
+        {
+            "outputFile": "com.webify.thunderbgservice.ahmed-mili-capacitor-thunder-bg-service-mergeReleaseResources-32:/values-h320dp-port-v13/values-h320dp-port-v13.xml",
+            "map": [
+                {
+                    "source": "C:\\Users\\Amiradou\\.gradle\\caches\\8.11.1\\transforms\\cbd38ed75a1d71a0db60c0e67af95142\\transformed\\material-1.12.0\\res\\values-h320dp-port-v13\\values-h320dp-port-v13.xml",
+                    "from": {
+                        "startLines": "2",
+                        "startColumns": "4",
+                        "startOffsets": "55",
+                        "endColumns": "63",
+                        "endOffsets": "114"
+                    }
+                }
+            ]
+        }
+    ]
+}

@@ -1,0 +1,4 @@
+int drawable ic_notification 0x0
+int id subtitle 0x0
+int id title 0x0
+int layout notification_foreground 0x0

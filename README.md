@@ -43,9 +43,53 @@ Le plugin nécessite les permissions suivantes (déjà incluses dans le plugin) 
 - `INTERNET`
 - `WAKE_LOCK`
 
-### 4. Configuration minimale
+### 4. Configuration des ressources Android (Recommandé)
 
-Aucune configuration supplémentaire n'est requise. Le plugin est prêt à l'emploi.
+Pour une meilleure expérience, créez les ressources suivantes dans votre app :
+
+**Layout de notification** (`android/app/src/main/res/layout/notification_foreground.xml`) :
+```xml
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:orientation="vertical"
+    android:padding="12dp">
+    <TextView
+        android:id="@+id/title"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Title"
+        android:textStyle="bold"
+        android:textSize="16sp" />
+    <TextView
+        android:id="@+id/subtitle"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Subtitle"
+        android:textSize="14sp" />
+</LinearLayout>
+```
+
+**Icône de notification** (`android/app/src/main/res/drawable/ic_notification.xml`) :
+```xml
+<?xml version="1.0" encoding="utf-8"?>
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="24dp"
+    android:height="24dp"
+    android:viewportWidth="24"
+    android:viewportHeight="24">
+    <path
+        android:fillColor="#FF000000"
+        android:pathData="M12,2C6.48,2 2,6.48 2,12s4.48,10 10,10 10,-4.48 10,-10S17.52,2 12,2zM13,17h-2v-6h2v6zM13,9h-2L11,7h2v2z"/>
+</vector>
+```
+
+**Note** : Si vous ne créez pas ces ressources, le plugin utilisera des fallbacks Android système. Voir [RESOURCES_SETUP.md](./docs/RESOURCES_SETUP.md) pour plus de détails.
+
+### 5. Configuration minimale
+
+Aucune autre configuration n'est requise. Le plugin est prêt à l'emploi.
 
 ---
 

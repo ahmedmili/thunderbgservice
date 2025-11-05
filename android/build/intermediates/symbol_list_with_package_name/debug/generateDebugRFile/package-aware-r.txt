@@ -1,4 +1,4 @@
-com.webify.thunderbgservice
+com.ahmedmili.thunderbgservice
 drawable ic_notification
 id subtitle
 id title

@@ -1,0 +1,26 @@
+[
+    {
+        "merged": "com.webify.thunderbgservice.ahmed-mili-capacitor-thunder-bg-service-release-34:/drawable-ldpi-v4/ic_call_answer.png",
+        "source": "com.webify.thunderbgservice.ahmed-mili-capacitor-thunder-bg-service-core-1.13.1-15:/drawable-ldpi-v4/ic_call_answer.png"
+    },
+    {
+        "merged": "com.webify.thunderbgservice.ahmed-mili-capacitor-thunder-bg-service-release-34:/drawable-ldpi-v4/ic_call_decline_low.png",
+        "source": "com.webify.thunderbgservice.ahmed-mili-capacitor-thunder-bg-service-core-1.13.1-15:/drawable-ldpi-v4/ic_call_decline_low.png"
+    },
+    {
+        "merged": "com.webify.thunderbgservice.ahmed-mili-capacitor-thunder-bg-service-release-34:/drawable-ldpi-v4/ic_call_answer_low.png",
+        "source": "com.webify.thunderbgservice.ahmed-mili-capacitor-thunder-bg-service-core-1.13.1-15:/drawable-ldpi-v4/ic_call_answer_low.png"
+    },
+    {
+        "merged": "com.webify.thunderbgservice.ahmed-mili-capacitor-thunder-bg-service-release-34:/drawable-ldpi-v4/ic_call_answer_video_low.png",
+        "source": "com.webify.thunderbgservice.ahmed-mili-capacitor-thunder-bg-service-core-1.13.1-15:/drawable-ldpi-v4/ic_call_answer_video_low.png"
+    },
+    {
+        "merged": "com.webify.thunderbgservice.ahmed-mili-capacitor-thunder-bg-service-release-34:/drawable-ldpi-v4/ic_call_answer_video.png",
+        "source": "com.webify.thunderbgservice.ahmed-mili-capacitor-thunder-bg-service-core-1.13.1-15:/drawable-ldpi-v4/ic_call_answer_video.png"
+    },
+    {
+        "merged": "com.webify.thunderbgservice.ahmed-mili-capacitor-thunder-bg-service-release-34:/drawable-ldpi-v4/ic_call_decline.png",
+        "source": "com.webify.thunderbgservice.ahmed-mili-capacitor-thunder-bg-service-core-1.13.1-15:/drawable-ldpi-v4/ic_call_decline.png"
+    }
+]
