@@ -214,3 +214,4 @@ Lors du redémarrage du service, l'état est restauré automatiquement.
 - [💡 Cas d'usage pratiques](./USE_CASES.md)
 - [📖 README principal](../README.md)
 
+

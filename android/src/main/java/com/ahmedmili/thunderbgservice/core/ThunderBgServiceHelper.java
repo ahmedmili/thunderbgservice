@@ -7,6 +7,7 @@ import com.ahmedmili.thunderbgservice.tasks.BackgroundTask;
 import com.ahmedmili.thunderbgservice.tasks.BackgroundTaskManager;
 import com.ahmedmili.thunderbgservice.tasks.TaskResultStorage;
 import com.ahmedmili.thunderbgservice.tasks.TaskEventEmitter;
+import com.ahmedmili.thunderbgservice.helpers.ResourceCache;
 
 /**
  * Classe helper publique pour l'app hôte.
@@ -134,10 +135,11 @@ public class ThunderBgServiceHelper {
 
     /**
      * Vérifie si un layout existe dans les ressources de l'app
+     * Utilise ResourceCache pour améliorer les performances
      */
     public static boolean layoutExists(Context context, String layoutName) {
         try {
-            int layoutId = context.getResources().getIdentifier(layoutName, "layout", context.getPackageName());
+            int layoutId = ResourceCache.getResourceId(context, layoutName, "layout", context.getPackageName());
             return layoutId != 0;
         } catch (Exception e) {
             Log.e(TAG, "Error checking layout: " + layoutName, e);
@@ -147,10 +149,11 @@ public class ThunderBgServiceHelper {
 
     /**
      * Vérifie si un ID de vue existe dans les ressources de l'app
+     * Utilise ResourceCache pour améliorer les performances
      */
     public static boolean viewIdExists(Context context, String viewIdName) {
         try {
-            int viewId = context.getResources().getIdentifier(viewIdName, "id", context.getPackageName());
+            int viewId = ResourceCache.getResourceId(context, viewIdName, "id", context.getPackageName());
             return viewId != 0;
         } catch (Exception e) {
             Log.e(TAG, "Error checking view ID: " + viewIdName, e);

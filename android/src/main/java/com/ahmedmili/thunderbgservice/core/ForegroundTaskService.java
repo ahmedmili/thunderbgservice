@@ -223,10 +223,10 @@ public class ForegroundTaskService extends Service {
             long elapsed = startAtMillis > 0 ? (now - startAtMillis) : 0L;
             String clock = formatElapsed(elapsed);
             Log.i("ThunderBG", "Alive #" + n + " • " + clock);
-            android.content.SharedPreferences prefs = getApplicationContext().getSharedPreferences(PREFS_SERVICE, Context.MODE_PRIVATE);
-            String viewDataJson = prefs.getString(KEY_VIEW_DATA_JSON, null);
-            String buttonsJson = prefs.getString(KEY_BUTTONS_JSON, null);
-            notificationHelper.updateNotification(null, null, clock, viewDataJson, buttonsJson);
+            // android.content.SharedPreferences prefs = getApplicationContext().getSharedPreferences(PREFS_SERVICE, Context.MODE_PRIVATE);
+            // String viewDataJson = prefs.getString(KEY_VIEW_DATA_JSON, null);
+            // String buttonsJson = prefs.getString(KEY_BUTTONS_JSON, null);
+            // notificationHelper.updateNotification(null, null, clock, viewDataJson, buttonsJson);
         }, 0, 1, TimeUnit.SECONDS);
     }
 
