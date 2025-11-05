@@ -330,10 +330,96 @@ Le plugin détecte automatiquement le type d'image :
 
 ## 🔄 Améliorations Futures
 
-### Phase 1 (En cours)
+## ✅ Amélioration #4 : Support iOS Fonctionnel
+
+**Version** : 0.1.3+  
+**Date** : 2024
+
+### 🎯 Problème Résolu
+
+Avant cette amélioration, le plugin ne fonctionnait que sur Android. Les utilisateurs iOS ne pouvaient pas bénéficier des fonctionnalités de service foreground, notifications persistantes et localisation en arrière-plan.
+
+### ✨ Solution Implémentée
+
+Une implémentation iOS complète qui reproduit les fonctionnalités Android :
+
+- **ThunderBgServicePlugin.swift** : Plugin principal avec toutes les méthodes
+- **NotificationHelper.swift** : Gestion des notifications via UNUserNotificationCenter
+- **LocationHelper.swift** : Suivi GPS via CLLocationManager
+- **BackgroundTaskManager.swift** : Tâches en arrière-plan via BGTaskScheduler
+- **Documentation complète** : Guide d'implémentation iOS
+
+### 📊 Fonctionnalités iOS
+
+- ✅ **Notifications persistantes** : Identique à Android
+- ✅ **Localisation en arrière-plan** : Via CLLocationManager
+- ✅ **Mise à jour dynamique** : Modification du contenu de notification
+- ✅ **Boutons interactifs** : Via UNNotificationAction
+- ⚠️ **Tâches en arrière-plan** : Limitées par iOS (BGTaskScheduler)
+- ⚠️ **Custom Layouts** : Via userInfo (pas de RemoteViews)
+
+### 🔧 Utilisation
+
+L'API TypeScript est **identique** à Android :
+
+```typescript
+import { ThunderBgService } from '@ahmed-mili/capacitor-thunder-bg-service';
+
+// Fonctionne sur iOS et Android
+await ThunderBgService.start({
+  notificationTitle: 'Online',
+  notificationSubtitle: 'Service actif',
+  enableLocation: true,
+  viewData: {
+    txtDriverName: 'John Doe',
+  },
+});
+```
+
+### ⚠️ Limitations iOS
+
+1. **Tâches en arrière-plan** :
+   - Exécution limitée à quelques minutes
+   - Fréquence contrôlée par iOS
+   - Peut être tuée par le système
+
+2. **Localisation** :
+   - Nécessite autorisation "Always" explicite
+   - L'utilisateur peut révoquer à tout moment
+
+3. **Custom Layouts** :
+   - Pas de RemoteViews comme Android
+   - Doit utiliser les extensions de notification
+
+### 📋 Configuration Requise
+
+Voir `ios/INFO_PLIST.md` pour la configuration complète :
+
+- Permissions de localisation dans Info.plist
+- Background Modes activés
+- BGTaskScheduler identifiers configurés
+
+### 🔍 Différences Android vs iOS
+
+| Fonctionnalité | Android | iOS |
+|----------------|---------|-----|
+| **Notifications** | ✅ RemoteViews | ✅ UNNotificationContent |
+| **Localisation** | ✅ FOREGROUND_SERVICE | ✅ CLLocationManager |
+| **Tâches** | ✅ Illimitées | ⚠️ Limitées par iOS |
+| **Custom Layouts** | ✅ XML | ⚠️ userInfo |
+
+### 📝 Notes
+
+- **API identique** : Le même code TypeScript fonctionne sur iOS et Android
+- **Comportement adapté** : Les limitations iOS sont gérées automatiquement
+- **Documentation complète** : Guide dédié dans `docs/IOS_IMPLEMENTATION.md`
+
+---
+
+### Phase 1 (Terminé)
 - ✅ Cache intelligent des ressources
 - ✅ Gestion d'état robuste
-- ⏳ Support iOS fonctionnel
+- ✅ Support iOS fonctionnel
 
 ### Phase 2 (En cours)
 - ✅ Support des images dynamiques
