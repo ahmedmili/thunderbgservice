@@ -39,13 +39,13 @@ public class ThunderBgServicePlugin extends Plugin {
         if (instance == null) {
             instance = this;
         }
-        String title = call.getString("notificationTitle", "Online");
-        String subtitle = call.getString("notificationSubtitle", "Running");
+        String title = call.getString("notificationTitle", null);
+        String subtitle = call.getString("notificationSubtitle", null);
         boolean enableLocation = call.getBoolean("enableLocation", true);
         boolean soundsEnabled = call.getBoolean("soundsEnabled", false);
         Intent extras = new Intent();
-        extras.putExtra(EXTRA_TITLE, title);
-        extras.putExtra(EXTRA_SUBTITLE, subtitle);
+        if (title != null) extras.putExtra(EXTRA_TITLE, title);
+        if (subtitle != null) extras.putExtra(EXTRA_SUBTITLE, subtitle);
         extras.putExtra(EXTRA_ENABLE_LOCATION, enableLocation);
         extras.putExtra(EXTRA_SOUNDS, soundsEnabled);
         // Optional custom layout from JS
@@ -57,6 +57,17 @@ public class ThunderBgServicePlugin extends Plugin {
         if (titleViewId != null) extras.putExtra(EXTRA_TITLE_VIEW_ID, titleViewId);
         if (subtitleViewId != null) extras.putExtra(EXTRA_SUBTITLE_VIEW_ID, subtitleViewId);
         if (timerViewId != null) extras.putExtra(EXTRA_TIMER_VIEW_ID, timerViewId);
+        // Dynamic bindings (optional): viewData (object) and buttons (array)
+        try {
+            com.getcapacitor.JSObject viewData = call.getObject("viewData", null);
+            if (viewData != null) {
+                extras.putExtra(EXTRA_VIEW_DATA_JSON, viewData.toString());
+            }
+            com.getcapacitor.JSArray buttons = call.getArray("buttons", null);
+            if (buttons != null) {
+                extras.putExtra(EXTRA_BUTTONS_JSON, buttons.toString());
+            }
+        } catch (Exception ignored) {}
         ForegroundTaskService.startAction(getContext(), ACTION_START, extras);
         JSObject ret = new JSObject(); ret.put("started", true); call.resolve(ret);
     }
@@ -70,8 +81,8 @@ public class ThunderBgServicePlugin extends Plugin {
     @PluginMethod
     public void update(PluginCall call) {
         Intent extras = new Intent();
-        if (call.hasOption("notificationTitle")) extras.putExtra(EXTRA_TITLE, call.getString("notificationTitle"));
-        if (call.hasOption("notificationSubtitle")) extras.putExtra(EXTRA_SUBTITLE, call.getString("notificationSubtitle"));
+        if (call.hasOption("notificationTitle")) { String v = call.getString("notificationTitle"); if (v != null) extras.putExtra(EXTRA_TITLE, v); }
+        if (call.hasOption("notificationSubtitle")) { String v = call.getString("notificationSubtitle"); if (v != null) extras.putExtra(EXTRA_SUBTITLE, v); }
         // Optional: change layout dynamically
         String customLayout = call.getString("customLayout", null);
         String titleViewId = call.getString("titleViewId", null);
@@ -81,6 +92,17 @@ public class ThunderBgServicePlugin extends Plugin {
         if (titleViewId != null) extras.putExtra(EXTRA_TITLE_VIEW_ID, titleViewId);
         if (subtitleViewId != null) extras.putExtra(EXTRA_SUBTITLE_VIEW_ID, subtitleViewId);
         if (timerViewId != null) extras.putExtra(EXTRA_TIMER_VIEW_ID, timerViewId);
+        // Dynamic bindings (optional)
+        try {
+            com.getcapacitor.JSObject viewData = call.getObject("viewData", null);
+            if (viewData != null) {
+                extras.putExtra(EXTRA_VIEW_DATA_JSON, viewData.toString());
+            }
+            com.getcapacitor.JSArray buttons = call.getArray("buttons", null);
+            if (buttons != null) {
+                extras.putExtra(EXTRA_BUTTONS_JSON, buttons.toString());
+            }
+        } catch (Exception ignored) {}
         ForegroundTaskService.startAction(getContext(), ACTION_UPDATE, extras);
         JSObject ret = new JSObject(); ret.put("updated", true); call.resolve(ret);
     }

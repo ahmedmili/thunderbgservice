@@ -24,5 +24,9 @@ public final class FgConstants {
     public static final String EXTRA_TASK_ID = "extra_task_id";
     public static final String EXTRA_TASK_CLASS = "extra_task_class";
     public static final String EXTRA_TASK_INTERVAL = "extra_task_interval";
+
+    // Dynamic UI bindings (JSON strings provided by app)
+    public static final String EXTRA_VIEW_DATA_JSON = "extra_view_data_json"; // { "viewIdName": "text", ... }
+    public static final String EXTRA_BUTTONS_JSON = "extra_buttons_json";     // [ { viewId: string, action: string, extras?: {k:v} } ]
 }
 

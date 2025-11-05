@@ -1,6 +1,6 @@
 # Exemples
 
-Ce dossier contient tous les exemples d'utilisation du plugin `@webify/capacitor-thunder-bg-service`.
+Ce dossier contient tous les exemples d'utilisation du plugin `@ahmed-mili/capacitor-thunder-bg-service`.
 
 ## Structure
 

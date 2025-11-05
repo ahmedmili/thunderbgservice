@@ -6,7 +6,7 @@
  * 2. Récupérer les résultats stockés par les tâches Java
  */
 
-import { ThunderBgService } from '@webify/capacitor-thunder-bg-service';
+import { ThunderBgService } from '@ahmed-mili/capacitor-thunder-bg-service';
 
 /**
  * Exemple 1: Écouter les événements des tâches
@@ -177,11 +177,18 @@ export class MyService {
   private communicationManager = new TaskCommunicationManager();
   
   async initialize() {
-    // Démarrer le service de notification
+    // Démarrer le service de notification (REQUIS: customLayout)
     await ThunderBgService.start({
-      notificationTitle: 'Online',
-      notificationSubtitle: 'Service actif',
+      customLayout: 'notification_online',
+      titleViewId: 'txtDriverStatus',
+      subtitleViewId: 'txtWaiting',
+      timerViewId: 'txtTimer',
       enableLocation: true,
+      viewData: {
+        txtDriverStatus: 'Online',
+        txtWaiting: 'Service actif',
+        txtTimer: '00:00:00',
+      },
     });
     
     // Configurer l'écoute des événements

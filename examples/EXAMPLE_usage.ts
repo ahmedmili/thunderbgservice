@@ -5,7 +5,7 @@
  * selon l'état de l'application.
  */
 
-import { ThunderBgService } from '@webify/capacitor-thunder-bg-service';
+import { ThunderBgService } from '@ahmed-mili/capacitor-thunder-bg-service';
 
 // État de l'application (synchro avec NotificationDynamicHelper.java)
 enum AppState {
@@ -93,20 +93,45 @@ class NotificationDynamicHelper {
     };
   }
 
-  static buildOptionsForState(state: AppState, enableLocation = true) {
+  static buildOptionsForState(state: AppState, enableLocation = true, includeButtons = false) {
     const layout = this.getLayoutForState(state);
     const viewIds = this.getViewIdsForLayout(layout);
     
-    return {
-      notificationTitle: this.getTitleForState(state),
-      notificationSubtitle: this.getSubtitleForState(state),
-      customLayout: layout,
+    const options: any = {
+      customLayout: layout, // REQUIS : Le plugin n'a pas de UI par défaut
       titleViewId: viewIds.titleId,
       subtitleViewId: viewIds.subtitleId,
       timerViewId: viewIds.timerId,
       enableLocation,
       soundsEnabled: state === AppState.ON_RIDE || state === AppState.ARRIVED,
+      // viewData : Injection dynamique de textes dans n'importe quel TextView
+      viewData: {
+        [viewIds.titleId]: this.getTitleForState(state),
+        [viewIds.subtitleId]: this.getSubtitleForState(state),
+        [viewIds.timerId]: '00:00:00', // Sera mis à jour par le heartbeat
+      },
     };
+    
+    // Boutons cliquables (optionnel)
+    if (includeButtons) {
+      options.buttons = this.getButtonsForState(state);
+    }
+    
+    return options;
+  }
+  
+  static getButtonsForState(state: AppState): Array<{viewId: string; action: string}> {
+    // Exemple de boutons selon l'état
+    if (state === AppState.ONLINE) {
+      return [
+        { viewId: 'btnGoOffline', action: 'com.yourapp.ACTION_OFFLINE' },
+      ];
+    } else if (state === AppState.ON_RIDE) {
+      return [
+        { viewId: 'btnComplete', action: 'com.yourapp.ACTION_COMPLETE_RIDE' },
+      ];
+    }
+    return [];
   }
 }
 
@@ -138,49 +163,53 @@ export class NotificationStateManager {
 
   async startRide() {
     this.currentState = AppState.ON_RIDE;
-    const options = NotificationDynamicHelper.buildOptionsForState(this.currentState);
-    // Changer le layout ET le contenu dynamiquement
+    const options = NotificationDynamicHelper.buildOptionsForState(this.currentState, true, true);
+    // Changer le layout ET le contenu dynamiquement avec viewData et buttons
     await ThunderBgService.update({
-      notificationTitle: options.notificationTitle,
-      notificationSubtitle: options.notificationSubtitle,
-      customLayout: options.customLayout,        // NOUVEAU: changer le layout
-      titleViewId: options.titleViewId,          // NOUVEAU: IDs pour le nouveau layout
+      customLayout: options.customLayout,
+      titleViewId: options.titleViewId,
       subtitleViewId: options.subtitleViewId,
       timerViewId: options.timerViewId,
+      viewData: options.viewData,
+      buttons: options.buttons,
     });
   }
 
   async waitingForPickup() {
     this.currentState = AppState.WAITING_PICKUP;
-    const options = NotificationDynamicHelper.buildOptionsForState(this.currentState);
+    const options = NotificationDynamicHelper.buildOptionsForState(this.currentState, true, true);
     await ThunderBgService.update({
-      notificationTitle: options.notificationTitle,
-      notificationSubtitle: options.notificationSubtitle,
-      customLayout: options.customLayout,        // Changer vers layout "waiting"
+      customLayout: options.customLayout,
       titleViewId: options.titleViewId,
       subtitleViewId: options.subtitleViewId,
       timerViewId: options.timerViewId,
+      viewData: options.viewData,
+      buttons: options.buttons,
     });
   }
 
   async arrived() {
     this.currentState = AppState.ARRIVED;
-    const options = NotificationDynamicHelper.buildOptionsForState(this.currentState);
+    const options = NotificationDynamicHelper.buildOptionsForState(this.currentState, true, true);
     await ThunderBgService.update({
-      notificationTitle: options.notificationTitle,
-      notificationSubtitle: options.notificationSubtitle,
-      customLayout: options.customLayout,        // Changer vers layout "arrived"
+      customLayout: options.customLayout,
       titleViewId: options.titleViewId,
       subtitleViewId: options.subtitleViewId,
       timerViewId: options.timerViewId,
+      viewData: options.viewData,
+      buttons: options.buttons,
     });
   }
 
   async completeRide() {
     this.currentState = AppState.COMPLETED;
+    const layout = NotificationDynamicHelper.getLayoutForState(this.currentState);
+    const viewIds = NotificationDynamicHelper.getViewIdsForLayout(layout);
     await ThunderBgService.update({
-      notificationTitle: NotificationDynamicHelper.getTitleForState(this.currentState),
-      notificationSubtitle: NotificationDynamicHelper.getSubtitleForState(this.currentState),
+      viewData: {
+        [viewIds.titleId]: NotificationDynamicHelper.getTitleForState(this.currentState),
+        [viewIds.subtitleId]: NotificationDynamicHelper.getSubtitleForState(this.currentState),
+      },
     });
     
     // Après quelques secondes, arrêter le service
@@ -232,60 +261,76 @@ export class ThunderBgServiceManager {
 }
 
 /**
- * Exemple 4: Utilisation avec des données dynamiques (ex: nom du client)
+ * Exemple 4: Utilisation avec des données dynamiques via viewData (ex: nom du client)
  */
 export async function updateNotificationWithClientInfo(clientName: string, destination: string) {
   await ThunderBgService.update({
-    notificationTitle: `En route vers ${destination}`,
-    notificationSubtitle: `Client: ${clientName}`,
+    customLayout: 'notification_riding',
+    titleViewId: 'txtDriverStatus',
+    subtitleViewId: 'txtDestination',
+    viewData: {
+      txtDriverStatus: `En route vers ${destination}`,
+      txtDestination: `Client: ${clientName}`,
+    },
   });
 }
 
 /**
- * Exemple 5: Utilisation avec un layout personnalisé selon l'état
+ * Exemple 5: Utilisation avec un layout personnalisé selon l'état (NOUVEAU: avec viewData)
  */
 export async function startWithCustomLayout(state: AppState) {
   const layout = NotificationDynamicHelper.getLayoutForState(state);
   const viewIds = NotificationDynamicHelper.getViewIdsForLayout(layout);
   
   await ThunderBgService.start({
-    notificationTitle: NotificationDynamicHelper.getTitleForState(state),
-    notificationSubtitle: NotificationDynamicHelper.getSubtitleForState(state),
-    customLayout: layout,
+    customLayout: layout, // REQUIS
     titleViewId: viewIds.titleId,
     subtitleViewId: viewIds.subtitleId,
     timerViewId: viewIds.timerId,
     enableLocation: true,
     soundsEnabled: state === AppState.ON_RIDE || state === AppState.ARRIVED,
+    // viewData : Injection dynamique des textes
+    viewData: {
+      [viewIds.titleId]: NotificationDynamicHelper.getTitleForState(state),
+      [viewIds.subtitleId]: NotificationDynamicHelper.getSubtitleForState(state),
+      [viewIds.timerId]: '00:00:00',
+    },
   });
 }
 
 /**
- * Exemple 6: Changer de layout dynamiquement (NOUVEAU!)
+ * Exemple 6: Changer de layout dynamiquement avec viewData et buttons (NOUVEAU!)
  * 
  * Vous pouvez changer de layout/écran de notification à tout moment
- * sans redémarrer le service, simplement en appelant update() avec
- * les nouveaux paramètres de layout.
+ * sans redémarrer le service. Le plugin persiste automatiquement l'état.
  */
 export async function switchLayoutDynamically(newState: AppState) {
   const layout = NotificationDynamicHelper.getLayoutForState(newState);
   const viewIds = NotificationDynamicHelper.getViewIdsForLayout(layout);
   
   await ThunderBgService.update({
-    notificationTitle: NotificationDynamicHelper.getTitleForState(newState),
-    notificationSubtitle: NotificationDynamicHelper.getSubtitleForState(newState),
     // Changer le layout ET les IDs dynamiquement
     customLayout: layout,                    // Nouveau layout
     titleViewId: viewIds.titleId,           // Nouveaux IDs
     subtitleViewId: viewIds.subtitleId,
     timerViewId: viewIds.timerId,
+    // viewData : Injection dynamique des textes
+    viewData: {
+      [viewIds.titleId]: NotificationDynamicHelper.getTitleForState(newState),
+      [viewIds.subtitleId]: NotificationDynamicHelper.getSubtitleForState(newState),
+      [viewIds.timerId]: '00:00:00',
+    },
+    // buttons : Boutons cliquables (optionnel)
+    buttons: NotificationDynamicHelper.getButtonsForState(newState),
   });
   
   console.log(`Layout changé vers: ${layout}`);
+  // Note: L'état est automatiquement persisté. Si vous fermez/rouvrez l'app,
+  // le layout et les données seront restaurés automatiquement.
 }
 
 /**
- * Exemple 7: Changer de layout avec des données dynamiques
+ * Exemple 7: Changer de layout avec des données dynamiques via viewData (NOUVEAU)
  */
 export async function switchToRideLayoutWithData(
   clientName: string,
@@ -294,14 +339,22 @@ export async function switchToRideLayoutWithData(
 ) {
   // Changer vers le layout "riding" avec des données spécifiques
   await ThunderBgService.update({
-    notificationTitle: `Course en cours`,
-    notificationSubtitle: `${clientName} → ${destination}`,
     customLayout: 'notification_riding',      // Changer le layout
     titleViewId: 'txtDriverStatus',          // IDs pour le layout "riding"
     subtitleViewId: 'txtDestination',
     timerViewId: 'txtElapsedTime',
-    // Note: Vous pouvez aussi mettre à jour d'autres vues si votre layout
-    // a des IDs supplémentaires (distance, etc.)
+    // viewData : Injection dynamique de tous les textes
+    viewData: {
+      txtDriverStatus: 'Course en cours',
+      txtDestination: `${clientName} → ${destination}`,
+      txtDistance: distance, // Si votre layout a un TextView avec id="txtDistance"
+      txtElapsedTime: '00:00:00',
+    },
+    // buttons : Boutons cliquables (optionnel)
+    buttons: [
+      { viewId: 'btnComplete', action: 'com.yourapp.ACTION_COMPLETE_RIDE' },
+      { viewId: 'btnCancel', action: 'com.yourapp.ACTION_CANCEL_RIDE' },
+    ],
   });
 }
 
@@ -312,29 +365,35 @@ export class DynamicLayoutManager {
   private currentLayout: string = 'notification_default';
 
   /**
-   * Change de layout selon l'état et met à jour automatiquement
+   * Change de layout selon l'état et met à jour automatiquement (NOUVEAU: avec viewData)
    */
   async switchToState(state: AppState) {
     const layout = NotificationDynamicHelper.getLayoutForState(state);
     const viewIds = NotificationDynamicHelper.getViewIdsForLayout(layout);
     
     if (this.currentLayout !== layout) {
-      // Le layout change, on doit le mettre à jour
+      // Le layout change, on doit le mettre à jour avec tous les paramètres
       await ThunderBgService.update({
-        notificationTitle: NotificationDynamicHelper.getTitleForState(state),
-        notificationSubtitle: NotificationDynamicHelper.getSubtitleForState(state),
         customLayout: layout,
         titleViewId: viewIds.titleId,
         subtitleViewId: viewIds.subtitleId,
         timerViewId: viewIds.timerId,
+        viewData: {
+          [viewIds.titleId]: NotificationDynamicHelper.getTitleForState(state),
+          [viewIds.subtitleId]: NotificationDynamicHelper.getSubtitleForState(state),
+          [viewIds.timerId]: '00:00:00',
+        },
+        buttons: NotificationDynamicHelper.getButtonsForState(state),
       });
       this.currentLayout = layout;
       console.log(`Layout changé: ${layout}`);
     } else {
-      // Même layout, juste mettre à jour le contenu
+      // Même layout, juste mettre à jour le contenu via viewData
       await ThunderBgService.update({
-        notificationTitle: NotificationDynamicHelper.getTitleForState(state),
-        notificationSubtitle: NotificationDynamicHelper.getSubtitleForState(state),
+        viewData: {
+          [viewIds.titleId]: NotificationDynamicHelper.getTitleForState(state),
+          [viewIds.subtitleId]: NotificationDynamicHelper.getSubtitleForState(state),
+        },
       });
     }
   }

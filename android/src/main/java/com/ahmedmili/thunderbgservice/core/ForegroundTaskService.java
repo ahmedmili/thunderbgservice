@@ -37,6 +37,8 @@ public class ForegroundTaskService extends Service {
     private static final String KEY_TIMER_VIEW_ID = "timer_view_id";
     private static final String KEY_START_AT = "start_at_millis";
     private static final String KEY_IS_RUNNING = "is_running";
+    private static final String KEY_VIEW_DATA_JSON = "view_data_json";
+    private static final String KEY_BUTTONS_JSON = "buttons_json";
     public static void startAction(Context context, String action, Intent extras) {
         Intent i = new Intent(context, ForegroundTaskService.class);
         i.setAction(action);
@@ -72,7 +74,9 @@ public class ForegroundTaskService extends Service {
                 if (customLayout != null && !customLayout.isEmpty()) {
                     notificationHelper.setCustomLayout(customLayout, titleIdName, subtitleIdName, timerIdName);
                 }
-                startForegroundInternal(title, subtitle, sounds);
+                String viewDataJson = intent.hasExtra(EXTRA_VIEW_DATA_JSON) ? intent.getStringExtra(EXTRA_VIEW_DATA_JSON) : prefs.getString(KEY_VIEW_DATA_JSON, null);
+                String buttonsJson = intent.hasExtra(EXTRA_BUTTONS_JSON) ? intent.getStringExtra(EXTRA_BUTTONS_JSON) : prefs.getString(KEY_BUTTONS_JSON, null);
+                startForegroundInternal(title, subtitle, sounds, viewDataJson, buttonsJson);
                 if (enableLocation) locationHelper.start();
 
                 long savedStart = prefs.getLong(KEY_START_AT, 0L);
@@ -93,6 +97,8 @@ public class ForegroundTaskService extends Service {
                         .putString(KEY_SUBTITLE_VIEW_ID, subtitleIdName)
                         .putString(KEY_TIMER_VIEW_ID, timerIdName)
                         .putBoolean(KEY_IS_RUNNING, true)
+                        .putString(KEY_VIEW_DATA_JSON, viewDataJson)
+                        .putString(KEY_BUTTONS_JSON, buttonsJson)
                         .apply();
 
                 // Réenregistrer les tâches persistées
@@ -134,7 +140,9 @@ public class ForegroundTaskService extends Service {
                     notificationHelper.setCustomLayout(customLayout, titleIdName, subtitleIdName, timerIdName);
                     Log.i("ThunderBG", "Layout changed to: " + customLayout);
                 }
-                notificationHelper.updateNotification(intent.getStringExtra(EXTRA_TITLE), intent.getStringExtra(EXTRA_SUBTITLE));
+                String viewDataJson = intent.getStringExtra(EXTRA_VIEW_DATA_JSON);
+                String buttonsJson = intent.getStringExtra(EXTRA_BUTTONS_JSON);
+                notificationHelper.updateNotification(intent.getStringExtra(EXTRA_TITLE), intent.getStringExtra(EXTRA_SUBTITLE), null, viewDataJson, buttonsJson);
                 // Persister la mise à jour partielle
                 android.content.SharedPreferences prefs = getApplicationContext().getSharedPreferences(PREFS_SERVICE, Context.MODE_PRIVATE);
                 android.content.SharedPreferences.Editor ed = prefs.edit();
@@ -144,6 +152,8 @@ public class ForegroundTaskService extends Service {
                 if (titleIdName != null) ed.putString(KEY_TITLE_VIEW_ID, titleIdName);
                 if (subtitleIdName != null) ed.putString(KEY_SUBTITLE_VIEW_ID, subtitleIdName);
                 if (timerIdName != null) ed.putString(KEY_TIMER_VIEW_ID, timerIdName);
+                if (viewDataJson != null) ed.putString(KEY_VIEW_DATA_JSON, viewDataJson);
+                if (buttonsJson != null) ed.putString(KEY_BUTTONS_JSON, buttonsJson);
                 ed.apply();
             }
             else if (ACTION_REGISTER_TASK.equals(action)) {
@@ -189,7 +199,7 @@ public class ForegroundTaskService extends Service {
 
     @Override public IBinder onBind(Intent intent) { return null; }
 
-    private void startForegroundInternal(String title, String subtitle, boolean sounds) { createChannel(); Notification n = notificationHelper.buildNotification(title, subtitle, sounds); startForeground(NOTIFICATION_ID_FOREGROUND, n); Log.i("ThunderBG","Service started in foreground"); }
+    private void startForegroundInternal(String title, String subtitle, boolean sounds, String viewDataJson, String buttonsJson) { createChannel(); Notification n = notificationHelper.buildNotification(title, subtitle, sounds, viewDataJson, buttonsJson); startForeground(NOTIFICATION_ID_FOREGROUND, n); Log.i("ThunderBG","Service started in foreground"); }
     private void stopForegroundInternal() { Log.i("ThunderBG","Service stopping"); stopForeground(true); stopSelf(); }
     private void createChannel() { if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) { NotificationChannel c = new NotificationChannel(CHANNEL_ID_FOREGROUND, "Thunder BG", NotificationManager.IMPORTANCE_LOW); c.enableLights(false); c.enableVibration(false); c.setLightColor(Color.BLUE); ((NotificationManager)getSystemService(Context.NOTIFICATION_SERVICE)).createNotificationChannel(c);} }
 
@@ -213,7 +223,10 @@ public class ForegroundTaskService extends Service {
             long elapsed = startAtMillis > 0 ? (now - startAtMillis) : 0L;
             String clock = formatElapsed(elapsed);
             Log.i("ThunderBG", "Alive #" + n + " • " + clock);
-            notificationHelper.updateNotification(null, "Running", clock);
+            android.content.SharedPreferences prefs = getApplicationContext().getSharedPreferences(PREFS_SERVICE, Context.MODE_PRIVATE);
+            String viewDataJson = prefs.getString(KEY_VIEW_DATA_JSON, null);
+            String buttonsJson = prefs.getString(KEY_BUTTONS_JSON, null);
+            notificationHelper.updateNotification(null, null, clock, viewDataJson, buttonsJson);
         }, 0, 1, TimeUnit.SECONDS);
     }
 

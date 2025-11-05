@@ -1,6 +1,15 @@
-# @webify/capacitor-thunder-bg-service
+# @ahmed-mili/capacitor-thunder-bg-service
 
 Plugin Capacitor 7 pour Android qui fournit un service foreground avec notifications, localisation, et gestion de tâches en arrière-plan. Fonctionne même quand l'app est fermée.
+
+## ✨ Fonctionnalités principales
+
+- **UI 100% dynamique depuis l'app** : Injection complète de layouts, textes et boutons depuis votre application
+- **Boutons cliquables dans la notification** : Boutons interactifs reliés à vos BroadcastReceiver
+- **Persistance d'état** : L'UI et l'état persistent même après fermeture/réouverture de l'app
+- **Tâches en arrière-plan** : Exécution de code Java même si l'app est fermée
+- **Localisation** : Suivi GPS en arrière-plan
+- **Aucune UI/logique par défaut** : Le plugin n'affiche que ce que vous envoyez depuis l'app
 
 ## 📋 Table des matières
 
@@ -8,13 +17,14 @@ Plugin Capacitor 7 pour Android qui fournit un service foreground avec notificat
 2. [Configuration](#configuration)
 3. [Utilisation de base](#utilisation-de-base)
 4. [Notifications personnalisées](#notifications-personnalisées)
-5. [Tâches en arrière-plan](#tâches-en-arrière-plan)
-6. [Localisation](#localisation)
-7. [Utilisation depuis Java natif](#utilisation-depuis-java-natif)
-8. [API complète](#api-complète)
-9. [Architecture](#architecture)
-10. [Exemples](#exemples)
-11. [Dépannage](#dépannage)
+5. [UI Dynamique 100% App-Driven](#-ui-dynamique-100-app-driven)
+6. [Tâches en arrière-plan](#tâches-en-arrière-plan)
+7. [Localisation](#localisation)
+8. [Utilisation depuis Java natif](#utilisation-depuis-java-natif)
+9. [API complète](#api-complète)
+10. [Architecture](#architecture)
+11. [Exemples](#exemples)
+12. [Dépannage](#dépannage)
 
 ---
 
@@ -23,7 +33,7 @@ Plugin Capacitor 7 pour Android qui fournit un service foreground avec notificat
 ### 1. Installer le package
 
 ```bash
-npm install @webify/capacitor-thunder-bg-service
+npm install @ahmed-mili/capacitor-thunder-bg-service
 ```
 
 ### 2. Synchroniser avec Capacitor
@@ -43,11 +53,11 @@ Le plugin nécessite les permissions suivantes (déjà incluses dans le plugin) 
 - `INTERNET`
 - `WAKE_LOCK`
 
-### 4. Configuration des ressources Android (Recommandé)
+### 4. Configuration des ressources Android (Requis)
 
-Pour une meilleure expérience, créez les ressources suivantes dans votre app :
+**Le plugin ne contient aucune UI par défaut.** Vous devez créer vos propres layouts dans votre app.
 
-**Layout de notification** (`android/app/src/main/res/layout/notification_foreground.xml`) :
+**Layout de notification** (`android/app/src/main/res/layout/notification_online.xml` - exemple) :
 ```xml
 <?xml version="1.0" encoding="utf-8"?>
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
@@ -56,18 +66,23 @@ Pour une meilleure expérience, créez les ressources suivantes dans votre app :
     android:orientation="vertical"
     android:padding="12dp">
     <TextView
-        android:id="@+id/title"
+        android:id="@+id/txtDriverStatus"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:text="Title"
+        android:text="En ligne"
         android:textStyle="bold"
         android:textSize="16sp" />
     <TextView
-        android:id="@+id/subtitle"
+        android:id="@+id/txtWaiting"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:text="Subtitle"
+        android:text="En attente"
         android:textSize="14sp" />
+    <Button
+        android:id="@+id/btnAction"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Action" />
 </LinearLayout>
 ```
 
@@ -85,7 +100,7 @@ Pour une meilleure expérience, créez les ressources suivantes dans votre app :
 </vector>
 ```
 
-**Note** : Si vous ne créez pas ces ressources, le plugin utilisera des fallbacks Android système. Voir [RESOURCES_SETUP.md](./docs/RESOURCES_SETUP.md) pour plus de détails.
+**Important** : Créez vos layouts dans `android/app/src/main/res/layout/` de votre app. Le plugin utilisera uniquement les layouts que vous spécifiez via `customLayout`.
 
 ### 5. Configuration minimale
 
@@ -118,11 +133,16 @@ async function requestPermissions() {
 
 ### 1. Démarrer le service
 
-```typescript
-import { ThunderBgService } from '@webify/capacitor-thunder-bg-service';
+**Important** : Vous devez toujours fournir `customLayout` car le plugin n'a pas de UI par défaut.
 
-// Démarrer avec les paramètres par défaut
+```typescript
+import { ThunderBgService } from '@ahmed-mili/capacitor-thunder-bg-service';
+
+// Démarrer avec un layout personnalisé
 await ThunderBgService.start({
+  customLayout: 'notification_online',  // REQUIS : nom de votre layout XML
+  titleViewId: 'txtDriverStatus',       // ID du TextView pour le titre
+  subtitleViewId: 'txtWaiting',        // ID du TextView pour le sous-titre
   notificationTitle: 'Online',
   notificationSubtitle: 'Service actif',
   enableLocation: true,
@@ -151,7 +171,7 @@ await ThunderBgService.stop();
 
 ```typescript
 import { Injectable } from '@angular/core';
-import { ThunderBgService } from '@webify/capacitor-thunder-bg-service';
+import { ThunderBgService } from '@ahmed-mili/capacitor-thunder-bg-service';
 
 @Injectable({
   providedIn: 'root'
@@ -319,6 +339,214 @@ class NotificationManager {
 
 ---
 
+## 🎨 UI Dynamique 100% App-Driven
+
+Le plugin ne contient **aucune UI ou logique par défaut**. Tout doit être fourni depuis votre application.
+
+### 1. Injection dynamique de textes (viewData)
+
+Utilisez `viewData` pour mettre à jour n'importe quel TextView de votre layout :
+
+```typescript
+await ThunderBgService.update({
+  customLayout: 'notification_online',
+  viewData: {
+    txtDriverStatus: 'En ligne',
+    txtWaiting: 'En attente de courses',
+    txtTimer: '00:05:23',
+    // Ajoutez autant de TextViews que vous voulez
+  },
+});
+```
+
+**Important** : Les IDs dans `viewData` doivent correspondre exactement aux IDs de votre XML (sans `@+id/`).
+
+### 2. Boutons cliquables dans la notification (buttons)
+
+Créez des boutons interactifs reliés à vos BroadcastReceiver :
+
+```typescript
+await ThunderBgService.update({
+  customLayout: 'notification_stepper',
+  buttons: [
+    {
+      viewId: 'btnPrev',  // ID du Button/TextView dans votre XML
+      action: 'com.yourapp.ACTION_STEPPER_PREV',  // Action broadcast
+    },
+    {
+      viewId: 'btnNext',
+      action: 'com.yourapp.ACTION_STEPPER_NEXT',
+    },
+    {
+      viewId: 'btnDone',
+      action: 'com.yourapp.ACTION_ONLINE',
+      extras: {  // Optionnel : données supplémentaires
+        step: '3',
+        status: 'completed',
+      },
+    },
+  ],
+});
+```
+
+### 3. Configuration du BroadcastReceiver
+
+Dans votre `AndroidManifest.xml` :
+
+```xml
+<receiver 
+    android:name=".NotifActionReceiver"
+    android:exported="true"
+    android:enabled="true">
+    <intent-filter>
+        <action android:name="com.yourapp.ACTION_STEPPER_PREV"/>
+        <action android:name="com.yourapp.ACTION_STEPPER_NEXT"/>
+        <action android:name="com.yourapp.ACTION_ONLINE"/>
+        <!-- Ajoutez toutes vos actions -->
+    </intent-filter>
+</receiver>
+```
+
+Dans votre `NotifActionReceiver.java` :
+
+```java
+public class NotifActionReceiver extends BroadcastReceiver {
+    @Override
+    public void onReceive(Context context, Intent intent) {
+        String action = intent.getAction();
+        if ("com.yourapp.ACTION_STEPPER_PREV".equals(action)) {
+            // Votre logique
+        } else if ("com.yourapp.ACTION_STEPPER_NEXT".equals(action)) {
+            // Votre logique
+        }
+    }
+}
+```
+
+### 4. Exemple complet : Page stepper avec boutons
+
+**Layout XML** (`notification_stepper.xml`) :
+
+```xml
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:orientation="vertical"
+    android:padding="12dp">
+    
+    <TextView
+        android:id="@+id/txtTitle"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Étapes"
+        android:textStyle="bold" />
+    
+    <TextView
+        android:id="@+id/txtCurrentStep"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Étape actuelle: 1/3" />
+    
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal">
+        
+        <Button
+            android:id="@+id/btnPrev"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:text="Précédent" />
+        
+        <Button
+            android:id="@+id/btnNext"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:text="Suivant" />
+    </LinearLayout>
+</LinearLayout>
+```
+
+**TypeScript** :
+
+```typescript
+// Démarrer avec page stepper
+await ThunderBgService.start({
+  customLayout: 'notification_stepper',
+  titleViewId: 'txtTitle',
+  subtitleViewId: 'txtCurrentStep',
+  viewData: {
+    txtTitle: 'Étapes',
+    txtCurrentStep: 'Étape actuelle: 1/3',
+  },
+  buttons: [
+    { viewId: 'btnPrev', action: 'com.yourapp.ACTION_STEPPER_PREV' },
+    { viewId: 'btnNext', action: 'com.yourapp.ACTION_STEPPER_NEXT' },
+  ],
+});
+
+// Mettre à jour dynamiquement
+await ThunderBgService.update({
+  viewData: {
+    txtCurrentStep: 'Étape actuelle: 2/3',
+  },
+});
+```
+
+**Java Helper** (dans votre app) :
+
+```java
+public class NotificationDynamicHelper {
+    private int currentStep = 1;
+    
+    public void stepNext() {
+        currentStep = Math.min(3, currentStep + 1);
+        updateStepperUI();
+    }
+    
+    private void updateStepperUI() {
+        Intent extras = new Intent();
+        extras.putExtra(FgConstants.EXTRA_CUSTOM_LAYOUT, "notification_stepper");
+        extras.putExtra(FgConstants.EXTRA_TITLE_VIEW_ID, "txtTitle");
+        extras.putExtra(FgConstants.EXTRA_SUBTITLE_VIEW_ID, "txtCurrentStep");
+        
+        JSONObject viewData = new JSONObject();
+        viewData.put("txtTitle", "Étapes");
+        viewData.put("txtCurrentStep", "Étape actuelle: " + currentStep + "/3");
+        extras.putExtra(FgConstants.EXTRA_VIEW_DATA_JSON, viewData.toString());
+        
+        JSONArray buttons = new JSONArray();
+        buttons.put(new JSONObject().put("viewId", "btnPrev").put("action", "com.yourapp.ACTION_STEPPER_PREV"));
+        buttons.put(new JSONObject().put("viewId", "btnNext").put("action", "com.yourapp.ACTION_STEPPER_NEXT"));
+        extras.putExtra(FgConstants.EXTRA_BUTTONS_JSON, buttons.toString());
+        
+        ForegroundTaskService.startAction(context, FgConstants.ACTION_UPDATE, extras);
+    }
+}
+```
+
+### 5. Persistance automatique
+
+Le plugin sauvegarde automatiquement :
+- Le layout actuel (`customLayout`)
+- Les IDs de vues (`titleViewId`, `subtitleViewId`, `timerViewId`)
+- Les données dynamiques (`viewData`)
+- Les boutons (`buttons`)
+
+Quand vous fermez et rouvrez l'app, l'UI est automatiquement restaurée à l'état précédent.
+
+### 6. Notes importantes
+
+- **Aucun layout par défaut** : Vous devez toujours fournir `customLayout`
+- **IDs exacts** : Les IDs dans `viewData` et `buttons` doivent correspondre exactement à votre XML
+- **Boutons cliquables** : Utilisez `Button` ou `TextView` avec `android:clickable="true"`
+- **Receiver exporté** : `android:exported="true"` est obligatoire sur Android 12+
+
+---
+
 ## 🔄 Tâches en arrière-plan
 
 ### 1. Concept
@@ -381,7 +609,7 @@ public class MySyncTask implements BackgroundTask {
 ### 3. Enregistrer une tâche depuis TypeScript
 
 ```typescript
-import { ThunderBgService } from '@webify/capacitor-thunder-bg-service';
+import { ThunderBgService } from '@ahmed-mili/capacitor-thunder-bg-service';
 
 // Démarrer le service d'abord
 await ThunderBgService.start({
@@ -713,14 +941,16 @@ public class MainActivity extends Activity {
 Démarre le service foreground.
 
 **Options:**
-- `notificationTitle: string` - Titre de la notification
+- `notificationTitle?: string` - Titre de la notification (optionnel)
 - `notificationSubtitle?: string` - Sous-titre (optionnel)
 - `enableLocation?: boolean` - Activer la localisation (défaut: true)
 - `soundsEnabled?: boolean` - Activer les sons (défaut: false)
-- `customLayout?: string` - Nom du layout personnalisé
+- `customLayout?: string` - **Requis** : Nom du layout personnalisé (sans .xml)
 - `titleViewId?: string` - ID du TextView pour le titre
 - `subtitleViewId?: string` - ID du TextView pour le sous-titre
 - `timerViewId?: string` - ID du TextView pour le timer
+- `viewData?: { [viewIdName: string]: string }` - **Nouveau** : Objet pour injecter des textes dans n'importe quel TextView
+- `buttons?: Array<{ viewId: string; action: string; extras?: object }>` - **Nouveau** : Tableau de boutons cliquables
 
 #### `stop(): Promise<{stopped: boolean}>`
 
@@ -960,6 +1190,17 @@ class MonitoringService {
 1. Vérifiez que le fichier XML existe dans `res/layout/`
 2. Vérifiez que les IDs des TextViews sont corrects
 3. Vérifiez les logs pour voir les IDs résolus
+4. **Important** : Le plugin ne contient pas de layout par défaut. Vous devez toujours fournir `customLayout`
+
+### Les boutons dans la notification ne fonctionnent pas
+
+✅ **Solution**:
+1. Vérifiez que le `BroadcastReceiver` est déclaré dans `AndroidManifest.xml` avec `android:exported="true"`
+2. Vérifiez que les actions dans `buttons` correspondent exactement aux actions déclarées dans le Receiver
+3. Vérifiez que les IDs de boutons dans `buttons` correspondent exactement aux IDs dans votre XML (sans `@+id/`)
+4. Utilisez `Button` ou `TextView` avec `android:clickable="true"` dans votre layout
+5. Vérifiez les logs Logcat (filtre `ThunderBG`) pour voir si les boutons sont bindés : cherchez `"Button bound: viewId=..."` ou `"⚠️ NO RECEIVER FOUND"`
+6. Vérifiez les logs de votre Receiver pour voir si les intents sont reçus : ajoutez `Log.d("Receiver", "Received: " + intent.getAction())`
 
 ### Erreur de compilation Java
 
@@ -994,11 +1235,13 @@ class MonitoringService {
 
 ## 📝 Notes importantes
 
-1. **Batterie**: Les intervalles courts peuvent drainer la batterie. Utilisez des intervalles >= 5000ms.
-2. **Permissions**: Toujours demander les permissions runtime avant d'utiliser le service.
-3. **Layouts**: Les layouts personnalisés doivent être dans `res/layout/` de votre app.
-4. **Tâches**: Les tâches doivent être en Java natif, pas en JavaScript.
-5. **Persistence**: Le service persiste même si l'app est fermée grâce au foreground service.
+1. **UI 100% app-driven**: Le plugin ne contient aucune UI/logique par défaut. Vous devez fournir `customLayout`, `viewData` et `buttons` depuis votre app.
+2. **Layout requis**: Vous devez toujours fournir `customLayout` lors du démarrage. Créez vos layouts dans `res/layout/` de votre app.
+3. **Persistance automatique**: L'UI et l'état (layout, viewData, buttons) sont automatiquement sauvegardés et restaurés après fermeture/réouverture de l'app.
+4. **Batterie**: Les intervalles courts peuvent drainer la batterie. Utilisez des intervalles >= 5000ms pour les tâches.
+5. **Permissions**: Toujours demander les permissions runtime avant d'utiliser le service.
+6. **Tâches**: Les tâches doivent être en Java natif, pas en JavaScript.
+7. **Boutons cliquables**: Utilisez `Button` ou `TextView` avec `android:clickable="true"` dans vos layouts. Déclarez le `BroadcastReceiver` avec `android:exported="true"` dans le Manifest.
 
 ---
 

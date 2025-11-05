@@ -9,18 +9,26 @@ import android.util.Log;
  * Cette classe peut être utilisée dans votre app hôte pour construire dynamiquement
  * les paramètres de notification selon l'état de l'app.
  * 
- * Usage dans votre code JS/TS:
- * import { ThunderBgService } from '@webify/capacitor-thunder-bg-service';
+ * IMPORTANT: Le plugin n'a plus de UI par défaut. customLayout est REQUIS.
  * 
- * // Exemple: état "Online"
+ * Usage dans votre code JS/TS:
+ * import { ThunderBgService } from '@ahmed-mili/capacitor-thunder-bg-service';
+ * 
+ * // Exemple: état "Online" avec viewData et buttons
  * await ThunderBgService.start({
- *   notificationTitle: NotificationDynamicHelper.getTitleForState("ONLINE"),
- *   notificationSubtitle: NotificationDynamicHelper.getSubtitleForState("ONLINE"),
- *   customLayout: NotificationDynamicHelper.getLayoutForState("ONLINE"),
- *   titleViewId: "txtTitle",
- *   subtitleViewId: "txtSubtitle",
- *   timerViewId: "txtTimer",
- *   enableLocation: true
+ *   customLayout: 'notification_online', // REQUIS
+ *   titleViewId: 'txtDriverStatus',
+ *   subtitleViewId: 'txtWaiting',
+ *   timerViewId: 'txtTimer',
+ *   enableLocation: true,
+ *   viewData: {
+ *     txtDriverStatus: 'Online',
+ *     txtWaiting: 'En attente de courses',
+ *     txtTimer: '00:00:00'
+ *   },
+ *   buttons: [
+ *     { viewId: 'btnGoOffline', action: 'com.yourapp.ACTION_OFFLINE' }
+ *   ]
  * });
  */
 public class NotificationDynamicHelper {
@@ -165,47 +173,82 @@ public class NotificationDynamicHelper {
     /**
      * Construit dynamiquement les options pour ThunderBgService.start()
      * Retourne un objet JSON-like (à convertir en JSObject côté JS)
+     * NOUVEAU: Inclut viewData et buttons pour l'injection dynamique
      */
-    public static NotificationOptions buildOptionsForState(AppState state, boolean enableLocation) {
+    public static NotificationOptions buildOptionsForState(AppState state, boolean enableLocation, boolean includeButtons) {
         String layout = getLayoutForState(state);
         NotificationViewIds ids = getViewIdsForLayout(layout);
         
         NotificationOptions options = new NotificationOptions();
-        options.notificationTitle = getTitleForState(state);
-        options.notificationSubtitle = getSubtitleForState(state);
-        options.customLayout = layout;
+        options.customLayout = layout; // REQUIS
         options.titleViewId = ids.titleId;
         options.subtitleViewId = ids.subtitleId;
         options.timerViewId = ids.timerId;
         options.enableLocation = enableLocation;
         options.soundsEnabled = (state == AppState.ON_RIDE || state == AppState.ARRIVED);
         
+        // viewData : Injection dynamique des textes (NOUVEAU)
+        options.viewDataJson = buildViewDataJson(ids, state);
+        
+        // buttons : Boutons cliquables (NOUVEAU, optionnel)
+        if (includeButtons) {
+            options.buttonsJson = buildButtonsJson(state);
+        }
+        
         return options;
     }
     
     /**
+     * Construit le JSON pour viewData (injection dynamique de textes)
+     */
+    private static String buildViewDataJson(NotificationViewIds ids, AppState state) {
+        // Format: {"viewId1":"text1","viewId2":"text2"}
+        return String.format(
+            "{\"%s\":\"%s\",\"%s\":\"%s\",\"%s\":\"%s\"}",
+            ids.titleId, getTitleForState(state),
+            ids.subtitleId, getSubtitleForState(state),
+            ids.timerId, "00:00:00"
+        );
+    }
+    
+    /**
+     * Construit le JSON pour buttons (boutons cliquables)
+     */
+    private static String buildButtonsJson(AppState state) {
+        // Format: [{"viewId":"btn1","action":"ACTION1"},{"viewId":"btn2","action":"ACTION2"}]
+        if (state == AppState.ONLINE) {
+            return "[{\"viewId\":\"btnGoOffline\",\"action\":\"com.yourapp.ACTION_OFFLINE\"}]";
+        } else if (state == AppState.ON_RIDE) {
+            return "[{\"viewId\":\"btnComplete\",\"action\":\"com.yourapp.ACTION_COMPLETE_RIDE\"}]";
+        }
+        return "[]";
+    }
+    
+    /**
      * Classe pour stocker les options de notification
+     * NOUVEAU: Inclut viewDataJson et buttonsJson pour l'injection dynamique
      */
     public static class NotificationOptions {
-        public String notificationTitle;
-        public String notificationSubtitle;
-        public String customLayout;
+        public String customLayout; // REQUIS
         public String titleViewId;
         public String subtitleViewId;
         public String timerViewId;
         public boolean enableLocation = true;
         public boolean soundsEnabled = false;
+        public String viewDataJson; // NOUVEAU: JSON pour injection dynamique de textes
+        public String buttonsJson;  // NOUVEAU: JSON pour boutons cliquables (optionnel)
         
         // Convertir en objet JS (exemple d'utilisation)
         public String toJson() {
             return String.format(
-                "{\"notificationTitle\":\"%s\",\"notificationSubtitle\":\"%s\"," +
-                "\"customLayout\":\"%s\",\"titleViewId\":\"%s\"," +
+                "{\"customLayout\":\"%s\",\"titleViewId\":\"%s\"," +
                 "\"subtitleViewId\":\"%s\",\"timerViewId\":\"%s\"," +
-                "\"enableLocation\":%s,\"soundsEnabled\":%s}",
-                notificationTitle, notificationSubtitle,
+                "\"enableLocation\":%s,\"soundsEnabled\":%s," +
+                "\"viewData\":%s,\"buttons\":%s}",
                 customLayout, titleViewId, subtitleViewId, timerViewId,
-                enableLocation, soundsEnabled
+                enableLocation, soundsEnabled,
+                viewDataJson != null ? viewDataJson : "{}",
+                buttonsJson != null ? buttonsJson : "[]"
             );
         }
     }
@@ -213,16 +256,18 @@ public class NotificationDynamicHelper {
     /**
      * Exemple d'utilisation depuis une classe Java native
      * (si vous voulez appeler le plugin depuis du code Java natif)
+     * NOUVEAU: Utilise viewData et buttons
      */
     public static void updateNotificationForState(Context context, AppState newState) {
-        NotificationOptions opts = buildOptionsForState(newState, true);
+        NotificationOptions opts = buildOptionsForState(newState, true, true);
         
         // Log pour debug
         Log.i(TAG, "Updating notification for state: " + newState);
         Log.i(TAG, "Options: " + opts.toJson());
         
         // Note: Vous devrez appeler le plugin via Capacitor Bridge depuis JS/TS
-        // Cette méthode sert juste à construire les options dynamiquement
+        // Cette méthode sert juste à construire les options dynamiquement.
+        // Le plugin persiste automatiquement l'état (layout, viewData, buttons).
     }
 }
 

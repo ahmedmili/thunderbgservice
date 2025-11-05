@@ -5,7 +5,7 @@
  * Ce fichier montre comment les enregistrer depuis JS/TS.
  */
 
-import { ThunderBgService } from '@webify/capacitor-thunder-bg-service';
+import { ThunderBgService } from '@ahmed-mili/capacitor-thunder-bg-service';
 
 /**
  * Exemple 1: Enregistrer une tâche personnalisée
@@ -13,7 +13,7 @@ import { ThunderBgService } from '@webify/capacitor-thunder-bg-service';
  * La classe Java doit exister dans votre app:
  * - Package: com.yourpackage
  * - Classe: MyCustomBackgroundTask
- * - Doit implémenter: com.webify.thunderbgservice.BackgroundTask
+ * - Doit implémenter: com.ahmedmili.thunderbgservice.tasks.BackgroundTask
  */
 export async function registerCustomTask() {
   await ThunderBgService.registerTask({
@@ -113,11 +113,18 @@ export class MyService {
   private taskManager = new BackgroundTaskManager();
   
   async initialize() {
-    // Démarrer le service de notification
+    // Démarrer le service de notification (REQUIS: customLayout)
     await ThunderBgService.start({
-      notificationTitle: 'Online',
-      notificationSubtitle: 'Service actif',
+      customLayout: 'notification_online',
+      titleViewId: 'txtDriverStatus',
+      subtitleViewId: 'txtWaiting',
+      timerViewId: 'txtTimer',
       enableLocation: true,
+      viewData: {
+        txtDriverStatus: 'Online',
+        txtWaiting: 'Service actif',
+        txtTimer: '00:00:00',
+      },
     });
     
     // Enregistrer les tâches en arrière-plan

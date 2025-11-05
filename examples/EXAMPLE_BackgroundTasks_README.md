@@ -21,7 +21,7 @@ package com.yourpackage;
 
 import android.content.Context;
 import android.util.Log;
-import com.webify.thunderbgservice.tasks.BackgroundTask;
+import com.ahmedmili.thunderbgservice.tasks.BackgroundTask;
 
 public class MyCustomTask implements BackgroundTask {
     private static final String TAG = "MyCustomTask";
@@ -46,7 +46,7 @@ public class MyCustomTask implements BackgroundTask {
 
 **Depuis TypeScript/JS**:
 ```typescript
-import { ThunderBgService } from '@webify/capacitor-thunder-bg-service';
+import { ThunderBgService } from '@ahmed-mili/capacitor-thunder-bg-service';
 
 await ThunderBgService.registerTask({
   taskId: 'myTask',
@@ -57,7 +57,7 @@ await ThunderBgService.registerTask({
 
 **Depuis Java natif**:
 ```java
-import com.webify.thunderbgservice.core.ThunderBgServiceHelper;
+import com.ahmedmili.thunderbgservice.core.ThunderBgServiceHelper;
 
 // Méthode 1: Enregistrer directement une instance
 MyCustomTask task = new MyCustomTask();

@@ -1,6 +1,6 @@
 # Utilisation du plugin depuis le code Java natif
 
-Ce guide explique comment utiliser les classes publiques du plugin `@webify/capacitor-thunder-bg-service` directement depuis le code Java natif de votre application Android, sans passer par le bridge Capacitor/TypeScript.
+Ce guide explique comment utiliser les classes publiques du plugin `@ahmed-mili/capacitor-thunder-bg-service` directement depuis le code Java natif de votre application Android, sans passer par le bridge Capacitor/TypeScript.
 
 ## Classe publique disponible
 
@@ -8,14 +8,14 @@ Ce guide explique comment utiliser les classes publiques du plugin `@webify/capa
 
 Classe utilitaire publique avec des méthodes statiques pour contrôler le service depuis Java natif.
 
-**Package**: `com.webify.thunderbgservice.ThunderBgServiceHelper`
+**Package**: `com.ahmedmili.thunderbgservice.core.ThunderBgServiceHelper`
 
 ## Méthodes disponibles
 
 ### 1. Démarrer le service
 
 ```java
-import com.webify.thunderbgservice.core.ThunderBgServiceHelper;
+import com.ahmedmili.thunderbgservice.core.ThunderBgServiceHelper;
 
 // Méthode simple
 ThunderBgServiceHelper.startService(
@@ -85,7 +85,7 @@ package com.yourpackage;
 
 import android.app.Activity;
 import android.os.Bundle;
-import com.webify.thunderbgservice.core.ThunderBgServiceHelper;
+import com.ahmedmili.thunderbgservice.core.ThunderBgServiceHelper;
 
 public class MainActivity extends Activity {
     @Override
@@ -118,7 +118,7 @@ package com.yourpackage;
 import android.app.Service;
 import android.content.Intent;
 import android.os.IBinder;
-import com.webify.thunderbgservice.core.ThunderBgServiceHelper;
+import com.ahmedmili.thunderbgservice.core.ThunderBgServiceHelper;
 
 public class MyBackgroundService extends Service {
     @Override
@@ -153,7 +153,7 @@ public class MyBackgroundService extends Service {
 package com.yourpackage;
 
 import android.content.Context;
-import com.webify.thunderbgservice.core.ThunderBgServiceHelper;
+import com.ahmedmili.thunderbgservice.core.ThunderBgServiceHelper;
 
 public class MyNotificationManager {
     private Context context;
@@ -205,7 +205,7 @@ package com.yourpackage;
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
-import com.webify.thunderbgservice.core.ThunderBgServiceHelper;
+import com.ahmedmili.thunderbgservice.core.ThunderBgServiceHelper;
 
 public class MyBroadcastReceiver extends BroadcastReceiver {
     @Override
@@ -258,7 +258,7 @@ public class MyBroadcastReceiver extends BroadcastReceiver {
 
 ## Installation
 
-1. Installez le plugin normalement : `npm i @webify/capacitor-thunder-bg-service`
+1. Installez le plugin normalement : `npm i @ahmed-mili/capacitor-thunder-bg-service`
 2. Faites `npx cap sync`
 3. Importez `ThunderBgServiceHelper` dans votre code Java natif
 4. Utilisez les méthodes statiques selon vos besoins
