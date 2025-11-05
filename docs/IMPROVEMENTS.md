@@ -95,11 +95,128 @@ Tous les appels à `getIdentifier()` ont été remplacés par `ResourceCache.get
 
 ---
 
+## ✅ Amélioration #2 : Gestion d'État Robuste
+
+**Version** : 0.1.3+  
+**Date** : 2024
+
+### 🎯 Problème Résolu
+
+Avant cette amélioration, la gestion des transitions d'état était manuelle et sans validation. Cela pouvait mener à :
+- Transitions d'état illogiques (ex: `COMPLETED` → `ONLINE` sans passer par `OFFLINE`)
+- Erreurs de logique métier difficiles à déboguer
+- Pas de validation des transitions autorisées
+- Code répétitif pour chaque changement d'état
+
+### ✨ Solution Implémentée
+
+Un système de **machine à états** avec validation automatique qui inclut :
+- **AppState** : Énumération des états possibles
+- **StateConfiguration** : Définition des transitions autorisées
+- **StateManager** : Gestionnaire avec validation des transitions
+- **ThunderBgStateHelper** : Intégration avec le plugin pour appliquer automatiquement les changements
+
+### 📊 Bénéfices
+
+- **Validation automatique** : Les transitions non autorisées sont bloquées
+- **Logique métier centralisée** : Toutes les règles de transition en un seul endroit
+- **Moins d'erreurs** : Impossible de passer d'un état à un autre invalide
+- **Code plus propre** : Pas besoin de vérifier manuellement chaque transition
+
+### 🔧 Utilisation
+
+#### Exemple basique
+
+```java
+import com.ahmedmili.thunderbgservice.state.*;
+
+ThunderBgStateHelper stateHelper = new ThunderBgStateHelper(context);
+
+// Transition simple avec validation
+stateHelper.transitionTo(AppState.ONLINE);  // ✅ Valide
+stateHelper.transitionTo(AppState.ON_RIDE); // ✅ Valide depuis ONLINE
+stateHelper.transitionTo(AppState.OFFLINE); // ✅ Valide depuis n'importe quel état
+stateHelper.transitionTo(AppState.COMPLETED); // ❌ Refusé si pas depuis ARRIVED
+```
+
+#### Configuration personnalisée
+
+```java
+// Créer une configuration personnalisée
+StateConfiguration customConfig = StateConfiguration.createCustom();
+customConfig.addTransition(AppState.OFFLINE, AppState.ONLINE);
+customConfig.addTransition(AppState.ONLINE, AppState.ON_RIDE);
+customConfig.addTransition(AppState.ON_RIDE, AppState.COMPLETED);
+
+ThunderBgStateHelper helper = new ThunderBgStateHelper(context, customConfig);
+```
+
+#### Avec listener pour actions personnalisées
+
+```java
+stateHelper.getStateManager().setListener(new StateManager.StateTransitionListener() {
+    @Override
+    public boolean onBeforeTransition(AppState from, AppState to) {
+        // Vérifier des conditions métier avant la transition
+        if (to == AppState.ONLINE && hasActiveRide()) {
+            return false; // Bloquer la transition
+        }
+        return true;
+    }
+    
+    @Override
+    public void onAfterTransition(AppState from, AppState to) {
+        // Actions après la transition réussie
+        if (to == AppState.COMPLETED) {
+            saveRideData();
+        }
+    }
+    
+    @Override
+    public void onTransitionDenied(AppState from, AppState to, String reason) {
+        // Gérer les transitions refusées
+        showError(reason);
+    }
+});
+```
+
+### 📈 États Disponibles
+
+- `OFFLINE` : Service arrêté
+- `ONLINE` : Service démarré, disponible
+- `ON_RIDE` : En cours de mission
+- `WAITING_PICKUP` : En attente du client
+- `DRIVING` : En train de conduire
+- `ARRIVED` : Arrivé à destination
+- `COMPLETED` : Mission terminée
+- `CUSTOM` : État personnalisé
+
+### 🔍 Transitions par Défaut
+
+Le plugin inclut des transitions logiques par défaut :
+- `OFFLINE` → `ONLINE` (démarrage)
+- `ONLINE` → `ON_RIDE` (début de mission)
+- `ON_RIDE` → `WAITING_PICKUP` (arrivée au pickup)
+- `WAITING_PICKUP` → `DRIVING` (client pris en charge)
+- `DRIVING` → `ARRIVED` (arrivée à destination)
+- `ARRIVED` → `COMPLETED` (mission terminée)
+- `COMPLETED` → `ONLINE` (nouvelle mission)
+- Tous les états → `OFFLINE` (arrêt d'urgence)
+
+### 📝 Notes
+
+- Les transitions sont **automatiquement appliquées** au service de notification
+- Chaque état peut avoir sa propre configuration (layout, IDs, etc.)
+- Les transitions refusées sont loggées avec la raison
+- Compatible avec toutes les versions existantes du plugin
+
+---
+
 ## 🔄 Améliorations Futures
 
 ### Phase 1 (En cours)
 - ✅ Cache intelligent des ressources
-- ⏳ Gestion d'état robuste
+- ✅ Gestion d'état robuste
 - ⏳ Support iOS fonctionnel
 
 ### Phase 2 (Planifié)
