@@ -119,6 +119,27 @@ public class BackgroundTaskManager {
         }
         return null;
     }
+
+    /**
+     * Récupère toutes les configurations de tâches persistées.
+     */
+    public static Map<String, TaskConfig> getAllTaskConfigs(Context context) {
+        SharedPreferences prefs = context.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE);
+        Map<String, ?> all = prefs.getAll();
+        Map<String, TaskConfig> result = new HashMap<>();
+        for (Map.Entry<String, ?> entry : all.entrySet()) {
+            String key = entry.getKey();
+            if (key.startsWith(PREF_TASK_PREFIX) && key.endsWith("_class")) {
+                String taskId = key.substring(PREF_TASK_PREFIX.length(), key.length() - "_class".length());
+                String className = (String) entry.getValue();
+                long interval = prefs.getLong(PREF_TASK_PREFIX + taskId + "_interval", 0);
+                if (className != null && interval > 0) {
+                    result.put(taskId, new TaskConfig(className, interval));
+                }
+            }
+        }
+        return result;
+    }
     
     public static class TaskConfig {
         public final String className;

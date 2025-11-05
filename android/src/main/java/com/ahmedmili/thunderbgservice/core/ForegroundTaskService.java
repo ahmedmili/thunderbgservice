@@ -26,6 +26,17 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
 
 public class ForegroundTaskService extends Service {
+    private static final String PREFS_SERVICE = "thunder_bg_service_state";
+    private static final String KEY_TITLE = "title";
+    private static final String KEY_SUBTITLE = "subtitle";
+    private static final String KEY_ENABLE_LOCATION = "enable_location";
+    private static final String KEY_SOUNDS = "sounds";
+    private static final String KEY_CUSTOM_LAYOUT = "custom_layout";
+    private static final String KEY_TITLE_VIEW_ID = "title_view_id";
+    private static final String KEY_SUBTITLE_VIEW_ID = "subtitle_view_id";
+    private static final String KEY_TIMER_VIEW_ID = "timer_view_id";
+    private static final String KEY_START_AT = "start_at_millis";
+    private static final String KEY_IS_RUNNING = "is_running";
     public static void startAction(Context context, String action, Intent extras) {
         Intent i = new Intent(context, ForegroundTaskService.class);
         i.setAction(action);
@@ -47,26 +58,71 @@ public class ForegroundTaskService extends Service {
         if (intent != null) {
             String action = intent.getAction();
             if (ACTION_START.equals(action)) {
-                String title = intent.getStringExtra(EXTRA_TITLE); String subtitle = intent.getStringExtra(EXTRA_SUBTITLE);
-                boolean enableLocation = intent.getBooleanExtra(EXTRA_ENABLE_LOCATION, true);
-                boolean sounds = intent.getBooleanExtra(EXTRA_SOUNDS, false);
-                // Optional custom layout
-                String customLayout = intent.getStringExtra(EXTRA_CUSTOM_LAYOUT);
-                String titleIdName = intent.getStringExtra(EXTRA_TITLE_VIEW_ID);
-                String subtitleIdName = intent.getStringExtra(EXTRA_SUBTITLE_VIEW_ID);
-                String timerIdName = intent.getStringExtra(EXTRA_TIMER_VIEW_ID);
+                // Charger l'état si extras absents
+                android.content.SharedPreferences prefs = getApplicationContext().getSharedPreferences(PREFS_SERVICE, Context.MODE_PRIVATE);
+                String title = intent.hasExtra(EXTRA_TITLE) ? intent.getStringExtra(EXTRA_TITLE) : prefs.getString(KEY_TITLE, null);
+                String subtitle = intent.hasExtra(EXTRA_SUBTITLE) ? intent.getStringExtra(EXTRA_SUBTITLE) : prefs.getString(KEY_SUBTITLE, null);
+                boolean enableLocation = intent.hasExtra(EXTRA_ENABLE_LOCATION) ? intent.getBooleanExtra(EXTRA_ENABLE_LOCATION, true) : prefs.getBoolean(KEY_ENABLE_LOCATION, true);
+                boolean sounds = intent.hasExtra(EXTRA_SOUNDS) ? intent.getBooleanExtra(EXTRA_SOUNDS, false) : prefs.getBoolean(KEY_SOUNDS, false);
+                String customLayout = intent.hasExtra(EXTRA_CUSTOM_LAYOUT) ? intent.getStringExtra(EXTRA_CUSTOM_LAYOUT) : prefs.getString(KEY_CUSTOM_LAYOUT, null);
+                String titleIdName = intent.hasExtra(EXTRA_TITLE_VIEW_ID) ? intent.getStringExtra(EXTRA_TITLE_VIEW_ID) : prefs.getString(KEY_TITLE_VIEW_ID, null);
+                String subtitleIdName = intent.hasExtra(EXTRA_SUBTITLE_VIEW_ID) ? intent.getStringExtra(EXTRA_SUBTITLE_VIEW_ID) : prefs.getString(KEY_SUBTITLE_VIEW_ID, null);
+                String timerIdName = intent.hasExtra(EXTRA_TIMER_VIEW_ID) ? intent.getStringExtra(EXTRA_TIMER_VIEW_ID) : prefs.getString(KEY_TIMER_VIEW_ID, null);
+
                 if (customLayout != null && !customLayout.isEmpty()) {
                     notificationHelper.setCustomLayout(customLayout, titleIdName, subtitleIdName, timerIdName);
                 }
                 startForegroundInternal(title, subtitle, sounds);
                 if (enableLocation) locationHelper.start();
-                startAtMillis = System.currentTimeMillis();
+
+                long savedStart = prefs.getLong(KEY_START_AT, 0L);
+                if (savedStart > 0L) {
+                    startAtMillis = savedStart;
+                } else {
+                    startAtMillis = System.currentTimeMillis();
+                    prefs.edit().putLong(KEY_START_AT, startAtMillis).apply();
+                }
+                // Sauvegarder l'état courant
+                prefs.edit()
+                        .putString(KEY_TITLE, title)
+                        .putString(KEY_SUBTITLE, subtitle)
+                        .putBoolean(KEY_ENABLE_LOCATION, enableLocation)
+                        .putBoolean(KEY_SOUNDS, sounds)
+                        .putString(KEY_CUSTOM_LAYOUT, customLayout)
+                        .putString(KEY_TITLE_VIEW_ID, titleIdName)
+                        .putString(KEY_SUBTITLE_VIEW_ID, subtitleIdName)
+                        .putString(KEY_TIMER_VIEW_ID, timerIdName)
+                        .putBoolean(KEY_IS_RUNNING, true)
+                        .apply();
+
+                // Réenregistrer les tâches persistées
+                try {
+                    java.util.Map<String, com.ahmedmili.thunderbgservice.tasks.BackgroundTaskManager.TaskConfig> all = com.ahmedmili.thunderbgservice.tasks.BackgroundTaskManager.getAllTaskConfigs(this);
+                    for (java.util.Map.Entry<String, com.ahmedmili.thunderbgservice.tasks.BackgroundTaskManager.TaskConfig> e : all.entrySet()) {
+                        String taskId = e.getKey();
+                        com.ahmedmili.thunderbgservice.tasks.BackgroundTaskManager.TaskConfig cfg = e.getValue();
+                        try {
+                            Class<?> clazz = Class.forName(cfg.className);
+                            BackgroundTask task = (BackgroundTask) clazz.getDeclaredConstructor().newInstance();
+                            BackgroundTaskManager.registerTask(this, taskId, task, cfg.intervalMs);
+                            Log.i("ThunderBG", "Task restored: " + taskId);
+                        } catch (Exception ex) {
+                            Log.e("ThunderBG", "Failed to restore task: " + taskId, ex);
+                        }
+                    }
+                } catch (Exception ex) {
+                    Log.e("ThunderBG", "Error restoring tasks", ex);
+                }
+
                 startHeartbeat();
             } else if (ACTION_STOP.equals(action)) { 
                 stopHeartbeat(); 
                 BackgroundTaskManager.stopAll(this);
                 stopForegroundInternal(); 
                 locationHelper.stop(); 
+                // Nettoyer l'état
+                android.content.SharedPreferences prefs = getApplicationContext().getSharedPreferences(PREFS_SERVICE, Context.MODE_PRIVATE);
+                prefs.edit().clear().apply();
             }
             else if (ACTION_UPDATE.equals(action)) {
                 // Optional: change layout dynamically
@@ -79,6 +135,16 @@ public class ForegroundTaskService extends Service {
                     Log.i("ThunderBG", "Layout changed to: " + customLayout);
                 }
                 notificationHelper.updateNotification(intent.getStringExtra(EXTRA_TITLE), intent.getStringExtra(EXTRA_SUBTITLE));
+                // Persister la mise à jour partielle
+                android.content.SharedPreferences prefs = getApplicationContext().getSharedPreferences(PREFS_SERVICE, Context.MODE_PRIVATE);
+                android.content.SharedPreferences.Editor ed = prefs.edit();
+                if (intent.hasExtra(EXTRA_TITLE)) ed.putString(KEY_TITLE, intent.getStringExtra(EXTRA_TITLE));
+                if (intent.hasExtra(EXTRA_SUBTITLE)) ed.putString(KEY_SUBTITLE, intent.getStringExtra(EXTRA_SUBTITLE));
+                if (customLayout != null) ed.putString(KEY_CUSTOM_LAYOUT, customLayout);
+                if (titleIdName != null) ed.putString(KEY_TITLE_VIEW_ID, titleIdName);
+                if (subtitleIdName != null) ed.putString(KEY_SUBTITLE_VIEW_ID, subtitleIdName);
+                if (timerIdName != null) ed.putString(KEY_TIMER_VIEW_ID, timerIdName);
+                ed.apply();
             }
             else if (ACTION_REGISTER_TASK.equals(action)) {
                 String taskId = intent.getStringExtra(EXTRA_TASK_ID);
