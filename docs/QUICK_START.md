@@ -256,3 +256,4 @@ A: Vérifiez que le `BroadcastReceiver` est déclaré dans `AndroidManifest.xml`
 
 **Prêt à continuer ?** Consultez les [exemples complets](../examples/) ou la [documentation complète](../README.md) !
 
+

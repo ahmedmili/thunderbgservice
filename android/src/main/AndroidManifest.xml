@@ -12,5 +12,10 @@
       android:name=".core.ForegroundTaskService"
       android:exported="false"
       android:foregroundServiceType="location|dataSync" />
+    
+    <!-- BroadcastReceiver pour les événements de géofencing -->
+    <receiver
+      android:name=".geofencing.GeofenceBroadcastReceiver"
+      android:exported="false" />
   </application>
 </manifest>

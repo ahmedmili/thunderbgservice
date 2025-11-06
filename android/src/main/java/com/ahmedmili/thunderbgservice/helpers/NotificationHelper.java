@@ -1,6 +1,8 @@
 package com.ahmedmili.thunderbgservice.helpers;
 
 import static com.ahmedmili.thunderbgservice.core.FgConstants.*;
+import com.ahmedmili.thunderbgservice.theme.ThemeManager;
+import com.ahmedmili.thunderbgservice.theme.ThemeConfig;
 
 import android.app.Notification;
 import android.app.PendingIntent;
@@ -32,25 +34,15 @@ public class NotificationHelper {
         String pkg = context.getPackageName();
         String pluginPkg = "com.ahmedmili.thunderbgservice"; // Package du plugin
         
-        // Essayer d'abord dans le package du plugin (si les ressources sont copiées)
-        defaultLayoutId = context.getResources().getIdentifier("notification_foreground", "layout", pluginPkg);
-        defaultTitleId = context.getResources().getIdentifier("title", "id", pluginPkg);
-        defaultSubtitleId = context.getResources().getIdentifier("subtitle", "id", pluginPkg);
-        defaultIconId = context.getResources().getIdentifier("ic_notification", "drawable", pluginPkg);
-        
-        // Si pas trouvé dans le plugin, essayer dans l'app hôte
-        if (defaultLayoutId == 0) {
-            defaultLayoutId = context.getResources().getIdentifier("notification_foreground", "layout", pkg);
-        }
-        if (defaultTitleId == 0) {
-            defaultTitleId = context.getResources().getIdentifier("title", "id", pkg);
-        }
-        if (defaultSubtitleId == 0) {
-            defaultSubtitleId = context.getResources().getIdentifier("subtitle", "id", pkg);
-        }
-        if (defaultIconId == 0) {
-            defaultIconId = context.getResources().getIdentifier("ic_notification", "drawable", pkg);
-        }
+        // Utiliser ResourceCache pour améliorer les performances
+        defaultLayoutId = ResourceCache.getResourceIdWithFallback(
+            context, "notification_foreground", "layout", pluginPkg, pkg);
+        defaultTitleId = ResourceCache.getResourceIdWithFallback(
+            context, "title", "id", pluginPkg, pkg);
+        defaultSubtitleId = ResourceCache.getResourceIdWithFallback(
+            context, "subtitle", "id", pluginPkg, pkg);
+        defaultIconId = ResourceCache.getResourceIdWithFallback(
+            context, "ic_notification", "drawable", pluginPkg, pkg);
         
         // Si toujours pas trouvé, utiliser des fallbacks Android système
         if (defaultLayoutId == 0) {
@@ -69,10 +61,11 @@ public class NotificationHelper {
 
     public void setCustomLayout(String layoutName, String titleViewIdName, String subtitleViewIdName, String timerViewIdName) {
         String pkg = context.getPackageName();
-        int layoutId = context.getResources().getIdentifier(layoutName, "layout", pkg);
-        int tId = titleViewIdName != null ? context.getResources().getIdentifier(titleViewIdName, "id", pkg) : 0;
-        int sId = subtitleViewIdName != null ? context.getResources().getIdentifier(subtitleViewIdName, "id", pkg) : 0;
-        int tmId = timerViewIdName != null ? context.getResources().getIdentifier(timerViewIdName, "id", pkg) : 0;
+        // Utiliser ResourceCache pour améliorer les performances
+        int layoutId = ResourceCache.getResourceId(context, layoutName, "layout", pkg);
+        int tId = titleViewIdName != null ? ResourceCache.getResourceId(context, titleViewIdName, "id", pkg) : 0;
+        int sId = subtitleViewIdName != null ? ResourceCache.getResourceId(context, subtitleViewIdName, "id", pkg) : 0;
+        int tmId = timerViewIdName != null ? ResourceCache.getResourceId(context, timerViewIdName, "id", pkg) : 0;
         this.customLayoutId = layoutId != 0 ? layoutId : null;
         this.titleViewId = tId != 0 ? tId : null;
         this.subtitleViewId = sId != 0 ? sId : null;
@@ -117,6 +110,9 @@ public class NotificationHelper {
         if (views != null) {
             if (titleViewId != null && title != null) views.setTextViewText(titleViewId, title);
             if (subtitleViewId != null && subtitle != null) views.setTextViewText(subtitleViewId, subtitle);
+            
+            // Appliquer le thème
+            applyTheme(views);
         }
         // Dynamic bindings
         if (views != null) applyDynamicBindings(views, viewDataJson, buttonsJson);
@@ -177,6 +173,10 @@ public class NotificationHelper {
             if (titleViewId != null && title != null) views.setTextViewText(titleViewId, title);
             if (subtitleViewId != null && subtitle != null) views.setTextViewText(subtitleViewId, subtitle);
             if (timerViewId != null && timerText != null) views.setTextViewText(timerViewId, timerText);
+            
+            // Appliquer le thème
+            applyTheme(views);
+            
             applyDynamicBindings(views, viewDataJson, buttonsJson);
         }
 
@@ -193,30 +193,103 @@ public class NotificationHelper {
         }
         androidx.core.app.NotificationManagerCompat.from(context)
                 .notify(NOTIFICATION_ID_FOREGROUND, b.build());
+        
+        // Enregistrer la mise à jour dans les métriques
+        try {
+            com.ahmedmili.thunderbgservice.metrics.PerformanceMetrics.getInstance(context)
+                .recordNotificationUpdate();
+        } catch (Exception ignored) {}
     }
 
     private void applyDynamicBindings(RemoteViews views, String viewDataJson, String buttonsJson) {
         String pkg = context.getPackageName();
-        // Text bindings
+        // Text bindings and image bindings
         if (viewDataJson != null && !viewDataJson.isEmpty()) {
             try {
                 org.json.JSONObject obj = new org.json.JSONObject(viewDataJson);
                 java.util.Iterator<String> keys = obj.keys();
                 while (keys.hasNext()) {
                     String viewIdName = keys.next();
-                    int id = context.getResources().getIdentifier(viewIdName, "id", pkg);
+                    // Utiliser ResourceCache pour améliorer les performances
+                    int id = ResourceCache.getResourceId(context, viewIdName, "id", pkg);
                     if (id != 0) {
-                        String text = String.valueOf(obj.get(viewIdName));
-                        views.setTextViewText(id, text);
-                        Log.d("ThunderBG", "Set text viewData[" + viewIdName + "]=" + text + " (id=" + id + ")");
-                    } else {
-                        Log.w("ThunderBG", "View ID not found: " + viewIdName + " in package " + pkg);
-                    }
+                        Object value = obj.get(viewIdName);
+                        String valueStr = String.valueOf(value);
+                        
+                        // Détecter si c'est une image (Base64, URL, ou ressource)
+                        if (isImageSource(valueStr)) {
+                            // C'est une image
+                            ImageLoaderHelper.loadImage(context, views, id, valueStr);
+                            Log.d("ThunderBG", "Set image viewData[" + viewIdName + "]=" + valueStr + " (id=" + id + ")");
+                        } else {
+                            // C'est du texte
+                            views.setTextViewText(id, valueStr);
+                            Log.d("ThunderBG", "Set text viewData[" + viewIdName + "]=" + valueStr + " (id=" + id + ")");
+                        }
+                } else {
+                    Log.w("ThunderBG", "View ID not found: " + viewIdName + " in package " + pkg);
                 }
+            }
+        } catch (Exception e) {
+            Log.w("ThunderBG", "Failed parsing viewDataJson", e);
+        }
+    }
+    
+    /**
+     * Applique le thème actuel aux RemoteViews
+     */
+    private void applyTheme(RemoteViews views) {
+        ThemeConfig theme = ThemeManager.getInstance(context).getCurrentTheme();
+        if (theme == null) {
+            return;
+        }
+        
+        String pkg = context.getPackageName();
+        
+        // Appliquer les couleurs aux vues si elles existent
+        if (titleViewId != null && theme.getTitleColor() != null) {
+            try {
+                int color = ThemeManager.parseColor(theme.getTitleColor());
+                views.setTextColor(titleViewId, color);
             } catch (Exception e) {
-                Log.w("ThunderBG", "Failed parsing viewDataJson", e);
+                Log.w("ThunderBG", "Error applying title color", e);
             }
         }
+        
+        if (subtitleViewId != null && theme.getSubtitleColor() != null) {
+            try {
+                int color = ThemeManager.parseColor(theme.getSubtitleColor());
+                views.setTextColor(subtitleViewId, color);
+            } catch (Exception e) {
+                Log.w("ThunderBG", "Error applying subtitle color", e);
+            }
+        }
+        
+        if (timerViewId != null) {
+            String timerColor = theme.getTimerColor() != null ? theme.getTimerColor() : theme.getAccentColor();
+            if (timerColor != null) {
+                try {
+                    int color = ThemeManager.parseColor(timerColor);
+                    views.setTextColor(timerViewId, color);
+                } catch (Exception e) {
+                    Log.w("ThunderBG", "Error applying timer color", e);
+                }
+            }
+        }
+        
+        // Appliquer la couleur de fond si un layout root existe
+        if (theme.getBackgroundColor() != null && customLayoutId != null) {
+            try {
+                // Essayer de trouver un ID de layout root (généralement @android:id/content ou le premier LinearLayout)
+                int rootId = android.R.id.content;
+                int color = ThemeManager.parseColor(theme.getBackgroundColor());
+                views.setInt(rootId, "setBackgroundColor", color);
+            } catch (Exception e) {
+                // Ignorer si on ne peut pas appliquer la couleur de fond
+                Log.d("ThunderBG", "Could not apply background color to layout");
+            }
+        }
+    }
         // Button bindings
         if (buttonsJson != null && !buttonsJson.isEmpty()) {
             try {
@@ -231,7 +304,8 @@ public class NotificationHelper {
                         Log.w("ThunderBG", "Button missing viewId or action: viewId=" + viewIdName + ", action=" + action);
                         continue;
                     }
-                    int vid = context.getResources().getIdentifier(viewIdName, "id", pkg);
+                    // Utiliser ResourceCache pour améliorer les performances
+                    int vid = ResourceCache.getResourceId(context, viewIdName, "id", pkg);
                     if (vid == 0) {
                         Log.e("ThunderBG", "Button view ID NOT FOUND: " + viewIdName + " in package " + pkg + ". Check your XML layout.");
                         continue;
@@ -284,6 +358,30 @@ public class NotificationHelper {
                 Log.e("ThunderBG", "Failed parsing buttonsJson: " + buttonsJson, e);
             }
         }
+    }
+    
+    /**
+     * Vérifie si une chaîne est une source d'image (Base64, URL, ou ressource)
+     */
+    private boolean isImageSource(String value) {
+        if (value == null || value.isEmpty()) {
+            return false;
+        }
+        
+        // Base64
+        if (value.startsWith("data:image") || value.startsWith("base64,")) {
+            return true;
+        }
+        
+        // URL
+        if (value.startsWith("http://") || value.startsWith("https://")) {
+            return true;
+        }
+        
+        // Ressource drawable (optionnel - on peut aussi le traiter comme texte)
+        // On ne le détecte pas automatiquement car cela pourrait être un nom de TextView
+        
+        return false;
     }
 }
 

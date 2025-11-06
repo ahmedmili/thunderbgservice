@@ -19,6 +19,7 @@ import com.ahmedmili.thunderbgservice.helpers.NotificationHelper;
 import com.ahmedmili.thunderbgservice.helpers.LocationHelper;
 import com.ahmedmili.thunderbgservice.tasks.BackgroundTask;
 import com.ahmedmili.thunderbgservice.tasks.BackgroundTaskManager;
+import com.ahmedmili.thunderbgservice.metrics.PerformanceMetrics;
 
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
@@ -78,6 +79,9 @@ public class ForegroundTaskService extends Service {
                 String buttonsJson = intent.hasExtra(EXTRA_BUTTONS_JSON) ? intent.getStringExtra(EXTRA_BUTTONS_JSON) : prefs.getString(KEY_BUTTONS_JSON, null);
                 startForegroundInternal(title, subtitle, sounds, viewDataJson, buttonsJson);
                 if (enableLocation) locationHelper.start();
+                
+                // Démarrer le tracking des métriques
+                PerformanceMetrics.getInstance(this).startServiceTracking();
 
                 long savedStart = prefs.getLong(KEY_START_AT, 0L);
                 if (savedStart > 0L) {
@@ -121,11 +125,18 @@ public class ForegroundTaskService extends Service {
                 }
 
                 startHeartbeat();
+                
+                // Enregistrer le démarrage du service dans les métriques
+                com.ahmedmili.thunderbgservice.metrics.PerformanceMetrics.getInstance(this).startServiceTracking();
             } else if (ACTION_STOP.equals(action)) { 
                 stopHeartbeat(); 
                 BackgroundTaskManager.stopAll(this);
                 stopForegroundInternal(); 
                 locationHelper.stop(); 
+                
+                // Enregistrer l'arrêt du service dans les métriques
+                com.ahmedmili.thunderbgservice.metrics.PerformanceMetrics.getInstance(this).stopServiceTracking();
+                
                 // Nettoyer l'état
                 android.content.SharedPreferences prefs = getApplicationContext().getSharedPreferences(PREFS_SERVICE, Context.MODE_PRIVATE);
                 prefs.edit().clear().apply();
@@ -143,6 +154,9 @@ public class ForegroundTaskService extends Service {
                 String viewDataJson = intent.getStringExtra(EXTRA_VIEW_DATA_JSON);
                 String buttonsJson = intent.getStringExtra(EXTRA_BUTTONS_JSON);
                 notificationHelper.updateNotification(intent.getStringExtra(EXTRA_TITLE), intent.getStringExtra(EXTRA_SUBTITLE), null, viewDataJson, buttonsJson);
+                
+                // Enregistrer la mise à jour de notification dans les métriques
+                com.ahmedmili.thunderbgservice.metrics.PerformanceMetrics.getInstance(this).recordNotificationUpdate();
                 // Persister la mise à jour partielle
                 android.content.SharedPreferences prefs = getApplicationContext().getSharedPreferences(PREFS_SERVICE, Context.MODE_PRIVATE);
                 android.content.SharedPreferences.Editor ed = prefs.edit();
@@ -223,10 +237,10 @@ public class ForegroundTaskService extends Service {
             long elapsed = startAtMillis > 0 ? (now - startAtMillis) : 0L;
             String clock = formatElapsed(elapsed);
             Log.i("ThunderBG", "Alive #" + n + " • " + clock);
-            android.content.SharedPreferences prefs = getApplicationContext().getSharedPreferences(PREFS_SERVICE, Context.MODE_PRIVATE);
-            String viewDataJson = prefs.getString(KEY_VIEW_DATA_JSON, null);
-            String buttonsJson = prefs.getString(KEY_BUTTONS_JSON, null);
-            notificationHelper.updateNotification(null, null, clock, viewDataJson, buttonsJson);
+            // android.content.SharedPreferences prefs = getApplicationContext().getSharedPreferences(PREFS_SERVICE, Context.MODE_PRIVATE);
+            // String viewDataJson = prefs.getString(KEY_VIEW_DATA_JSON, null);
+            // String buttonsJson = prefs.getString(KEY_BUTTONS_JSON, null);
+            // notificationHelper.updateNotification(null, null, clock, viewDataJson, buttonsJson);
         }, 0, 1, TimeUnit.SECONDS);
     }
 
