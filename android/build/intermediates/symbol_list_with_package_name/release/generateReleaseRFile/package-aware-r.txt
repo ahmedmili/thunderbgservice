@@ -1,5 +1,0 @@
-com.webify.thunderbgservice
-drawable ic_notification
-id subtitle
-id title
-layout notification_foreground

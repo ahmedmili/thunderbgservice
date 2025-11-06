@@ -147,12 +147,16 @@ public class ForegroundTaskService extends Service {
                 String titleIdName = intent.getStringExtra(EXTRA_TITLE_VIEW_ID);
                 String subtitleIdName = intent.getStringExtra(EXTRA_SUBTITLE_VIEW_ID);
                 String timerIdName = intent.getStringExtra(EXTRA_TIMER_VIEW_ID);
+                Log.d("ThunderBG", "ACTION_UPDATE reçu: customLayout=" + customLayout + 
+                        ", titleIdName=" + titleIdName + ", subtitleIdName=" + subtitleIdName + ", timerIdName=" + timerIdName);
                 if (customLayout != null && !customLayout.isEmpty()) {
                     notificationHelper.setCustomLayout(customLayout, titleIdName, subtitleIdName, timerIdName);
                     Log.i("ThunderBG", "Layout changed to: " + customLayout);
                 }
                 String viewDataJson = intent.getStringExtra(EXTRA_VIEW_DATA_JSON);
                 String buttonsJson = intent.getStringExtra(EXTRA_BUTTONS_JSON);
+                Log.d("ThunderBG", "ACTION_UPDATE payload: viewDataJson=" + (viewDataJson != null ? (viewDataJson.length() + " chars") : "null")
+                        + ", buttonsJson=" + (buttonsJson != null ? (buttonsJson.length() + " chars") : "null"));
                 notificationHelper.updateNotification(intent.getStringExtra(EXTRA_TITLE), intent.getStringExtra(EXTRA_SUBTITLE), null, viewDataJson, buttonsJson);
                 
                 // Enregistrer la mise à jour de notification dans les métriques

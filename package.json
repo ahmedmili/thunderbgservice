@@ -1,6 +1,6 @@
 {
   "name": "@ahmed-mili/capacitor-thunder-bg-service",
-  "version": "0.1.2",
+  "version": "0.1.31",
   "description": "Capacitor 7 plugin - Android foreground service with notification, location tracking, and background tasks.",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",

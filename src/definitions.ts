@@ -1,4 +1,21 @@
-export interface StartOptions { notificationTitle: string; notificationSubtitle?: string; enableLocation?: boolean; soundsEnabled?: boolean; [k: string]: any; }
+export interface StartOptions {
+  notificationTitle: string;                    // REQUIRED: Notification title
+  notificationSubtitle?: string;                 // Optional: Notification subtitle
+  enableLocation?: boolean;                      // Optional: Enable location tracking (default: true)
+  soundsEnabled?: boolean;                        // Optional: Enable notification sounds (default: false)
+  customLayout?: string;                         // Optional: Custom layout name (without .xml) - REQUIRED for custom UI
+  titleViewId?: string;                         // Optional: TextView ID for title in custom layout
+  subtitleViewId?: string;                       // Optional: TextView ID for subtitle in custom layout
+  timerViewId?: string;                          // Optional: TextView ID for timer in custom layout
+  viewData?: {                                   // Optional: Dynamic text/image injection by view ID
+    [viewIdName: string]: string;
+  };
+  buttons?: Array<{                             // Optional: Clickable buttons with BroadcastReceiver actions
+    viewId: string;                              // Button/view ID in XML layout
+    action: string;                              // BroadcastReceiver action string
+    extras?: { [key: string]: string };          // Optional extras to pass with action
+  }>;
+}
 export interface RegisterTaskOptions {
   taskId: string;
   taskClass: string;  // Nom complet de la classe Java (ex: "com.yourpackage.MyTask")

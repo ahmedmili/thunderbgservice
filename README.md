@@ -184,6 +184,9 @@ export class BackgroundService {
         notificationTitle: 'Online',
         notificationSubtitle: 'Service actif',
         enableLocation: true,
+        customLayout: 'notification_online',  // REQUIS : layout personnalisé
+        titleViewId: 'txtTitle',
+        subtitleViewId: 'txtSubtitle',
       });
       console.log('Service démarré');
     } catch (error) {
@@ -207,11 +210,11 @@ export class BackgroundService {
 
 ## 🎨 Notifications personnalisées
 
-### 1. Layout personnalisé par défaut
+### 1. Layout personnalisé (Requis)
 
-Le plugin utilise un layout par défaut (`notification_foreground.xml`) avec :
-- Titre (`R.id.title`)
-- Sous-titre (`R.id.subtitle`)
+**⚠️ Important** : Le plugin n'a **pas de layout par défaut**. Vous devez créer votre propre layout XML dans votre application.
+
+Le plugin peut utiliser un layout de fallback si aucun `customLayout` n'est fourni, mais il est **fortement recommandé** de toujours fournir un `customLayout` pour un contrôle total de l'UI.
 
 ### 2. Créer votre propre layout
 
@@ -388,6 +391,8 @@ await ThunderBgService.update({
   ],
 });
 ```
+
+**⚠️ Important** : Les boutons doivent être **re-fournis à chaque appel à `update()`** car les instances de `RemoteViews` sont recréées. Si vous omettez `buttons` dans un `update()`, les boutons perdront leurs bindings de clics.
 
 ### 3. Configuration du BroadcastReceiver
 
@@ -758,6 +763,9 @@ await ThunderBgService.start({
   notificationTitle: 'Online',
   notificationSubtitle: 'Service actif',
   enableLocation: true,  // Active la localisation
+  customLayout: 'notification_online',  // REQUIS : layout personnalisé
+  titleViewId: 'txtTitle',
+  subtitleViewId: 'txtSubtitle',
 });
 ```
 

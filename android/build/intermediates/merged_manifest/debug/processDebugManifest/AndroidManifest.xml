@@ -18,6 +18,11 @@
             android:name="com.ahmedmili.thunderbgservice.core.ForegroundTaskService"
             android:exported="false"
             android:foregroundServiceType="location|dataSync" />
+
+        <!-- BroadcastReceiver pour les événements de géofencing -->
+        <receiver
+            android:name="com.ahmedmili.thunderbgservice.geofencing.GeofenceBroadcastReceiver"
+            android:exported="false" />
     </application>
 
 </manifest>

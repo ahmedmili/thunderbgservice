@@ -99,7 +99,8 @@ await ThunderBgService.update({
     { viewId: 'btnNext', action: 'com.yourapp.ACTION_NEXT' },
   ],
 });
-```
+
+**⚠️ Important** : Les boutons doivent être **re-fournis à chaque appel à `update()`** car les instances de `RemoteViews` sont recréées. Si vous omettez `buttons` dans un `update()`, les boutons perdront leurs bindings de clics.
 
 **Retourne:** `Promise<{updated: boolean}>`
 
@@ -376,5 +377,6 @@ interface TaskEvent {
 - [💡 Cas d'usage pratiques](./USE_CASES.md)
 - [📝 Exemples complets](../examples/)
 - [📖 README principal](../README.md)
+
 
 

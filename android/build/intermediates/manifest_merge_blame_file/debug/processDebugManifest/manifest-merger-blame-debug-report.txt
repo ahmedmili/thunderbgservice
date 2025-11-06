@@ -30,7 +30,7 @@
 14-->C:\Users\Amiradou\Desktop\webify\plugin\thunder-bg-service\android\src\main\AndroidManifest.xml:9:20-81
 15
 16    <application>
-16-->C:\Users\Amiradou\Desktop\webify\plugin\thunder-bg-service\android\src\main\AndroidManifest.xml:10:3-15:17
+16-->C:\Users\Amiradou\Desktop\webify\plugin\thunder-bg-service\android\src\main\AndroidManifest.xml:10:3-20:17
 17        <service
 17-->C:\Users\Amiradou\Desktop\webify\plugin\thunder-bg-service\android\src\main\AndroidManifest.xml:11:5-14:59
 18            android:name="com.ahmedmili.thunderbgservice.core.ForegroundTaskService"
@@ -39,6 +39,14 @@
 19-->C:\Users\Amiradou\Desktop\webify\plugin\thunder-bg-service\android\src\main\AndroidManifest.xml:13:7-31
 20            android:foregroundServiceType="location|dataSync" />
 20-->C:\Users\Amiradou\Desktop\webify\plugin\thunder-bg-service\android\src\main\AndroidManifest.xml:14:7-56
-21    </application>
-22
-23</manifest>
+21
+22        <!-- BroadcastReceiver pour les événements de géofencing -->
+23        <receiver
+23-->C:\Users\Amiradou\Desktop\webify\plugin\thunder-bg-service\android\src\main\AndroidManifest.xml:17:5-19:34
+24            android:name="com.ahmedmili.thunderbgservice.geofencing.GeofenceBroadcastReceiver"
+24-->C:\Users\Amiradou\Desktop\webify\plugin\thunder-bg-service\android\src\main\AndroidManifest.xml:18:7-59
+25            android:exported="false" />
+25-->C:\Users\Amiradou\Desktop\webify\plugin\thunder-bg-service\android\src\main\AndroidManifest.xml:19:7-31
+26    </application>
+27
+28</manifest>
